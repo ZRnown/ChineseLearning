@@ -8,6 +8,7 @@ from .init_db import init_db
 # Create database tables
 models.Base.metadata.create_all(bind=engine)
 
+
 # Initialize example data
 init_db()
 
