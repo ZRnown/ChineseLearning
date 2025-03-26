@@ -12,7 +12,6 @@ A web platform for foreigners to learn Chinese classical literature with AI-powe
 
 ## Tech Stack
 
-
 - Frontend: React + TypeScript + Tailwind CSS
 - Backend: Python FastAPI
 - Database: SQLite
