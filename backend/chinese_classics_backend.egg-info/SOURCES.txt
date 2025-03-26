@@ -1,0 +1,14 @@
+setup.py
+app/__init__.py
+app/auth.py
+app/database.py
+app/main.py
+app/models.py
+app/serializers.py
+app/urls.py
+app/views.py
+chinese_classics_backend.egg-info/PKG-INFO
+chinese_classics_backend.egg-info/SOURCES.txt
+chinese_classics_backend.egg-info/dependency_links.txt
+chinese_classics_backend.egg-info/requires.txt
+chinese_classics_backend.egg-info/top_level.txt
