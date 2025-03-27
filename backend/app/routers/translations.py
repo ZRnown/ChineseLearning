@@ -30,19 +30,21 @@ class Translation(TranslationBase):
 
 
 @router.get("/", response_model=List[Translation])
-async def get_translations(
-    skip: int = 0,
-    limit: int = 10,
+def get_translations_by_classic(
     classic_id: Optional[int] = None,
-    db: Session = Depends(get_db),
-    current_user: Optional[models.User] = Depends(get_current_user_optional),
+    language: Optional[str] = None,
+    db: Session = Depends(get_db)
 ):
+    """获取指定古籍的所有译文"""
     query = db.query(models.Translation)
-
+    
     if classic_id:
         query = query.filter(models.Translation.classic_id == classic_id)
-
-    translations = query.offset(skip).limit(limit).all()
+        
+    if language:
+        query = query.filter(models.Translation.language == language)
+        
+    translations = query.all()
     return translations
 
 

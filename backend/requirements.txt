@@ -4,9 +4,10 @@ sqlalchemy==2.0.23
 pydantic==2.5.2
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
+bcrypt==4.0.1
 python-multipart==0.0.6
 httpx==0.25.2
 python-dotenv==1.0.0
 transformers==4.36.2
-torch==2.1.2
-sentencepiece==0.1.99 
+# torch==2.1.2  # 暂时注释掉这一行
+sentencepiece==0.1.99

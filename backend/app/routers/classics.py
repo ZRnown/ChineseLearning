@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
 from .. import models, schemas
-from ..routers.auth import get_current_user_optional
+from ..routers.auth import get_current_user, get_current_user_optional
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -63,13 +63,14 @@ async def get_classics(
 
 
 @router.get("/{classic_id}", response_model=schemas.Classic)
-async def get_classic(
-    classic_id: int,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user_optional),
+@router.get("/{classic_id}/", response_model=schemas.Classic)
+def get_classic(
+    classic_id: int, 
+    db: Session = Depends(get_db)
 ):
+    """获取单个古籍详情，无需登录"""
     classic = db.query(models.Classic).filter(models.Classic.id == classic_id).first()
-    if not classic:
+    if classic is None:
         raise HTTPException(status_code=404, detail="Classic not found")
     return classic
 
@@ -155,3 +156,25 @@ def read_translations(
     if language:
         query = query.filter(models.Translation.language == language)
     return query.all()
+
+
+@router.get("/{classic_id}/comments", response_model=List[schemas.Note])
+@router.get("/{classic_id}/comments/", response_model=List[schemas.Note])
+def get_classic_comments(
+    classic_id: int,
+    page: int = 1,
+    db: Session = Depends(get_db)
+):
+    """获取古籍的所有评论，无需登录"""
+    print(f"Fetching comments for classic {classic_id}, page {page}")
+    
+    # 计算分页
+    limit = 10
+    skip = (page - 1) * limit
+    
+    notes = db.query(models.Note).filter(
+        models.Note.classic_id == classic_id
+    ).offset(skip).limit(limit).all()
+    
+    print(f"Found {len(notes)} comments")
+    return notes

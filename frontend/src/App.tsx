@@ -11,6 +11,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Translation from './pages/Translation';
 import Notes from './pages/Notes';
+import Translations from './components/Translations';
 
 const App: React.FC = () => {
   return (
@@ -35,6 +36,7 @@ const App: React.FC = () => {
               />
               <Route path="/translation" element={<Translation />} />
               <Route path="/notes" element={<Notes />} />
+              <Route path="/translations" element={<Translations />} />
             </Routes>
           </main>
         </div>

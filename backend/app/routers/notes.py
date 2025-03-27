@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
-from .. import models
-from .auth import get_current_user_optional
+from .. import models, schemas
+from ..auth import get_current_user_optional
 from pydantic import BaseModel
 from datetime import datetime
 
@@ -143,3 +143,18 @@ async def delete_note(
     db.delete(db_note)
     db.commit()
     return {"message": "Note deleted successfully"}
+
+
+@router.get("/", response_model=List[Note])
+def get_notes_by_classic(
+    classic_id: Optional[int] = None,
+    db: Session = Depends(get_db)
+):
+    """获取指定古籍的所有评论"""
+    query = db.query(models.Note)
+    
+    if classic_id:
+        query = query.filter(models.Note.classic_id == classic_id)
+        
+    notes = query.all()
+    return notes

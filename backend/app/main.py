@@ -12,18 +12,20 @@ models.Base.metadata.create_all(bind=engine)
 # Initialize example data
 init_db()
 
-app = FastAPI(title="中国古典文学 API")
+app = FastAPI(
+    title="中国古典文学 API",
+    # 恢复默认的重定向行为
+    # redirect_slashes=False  
+)
 
 # 配置 CORS
 app.add_middleware(
     CORSMiddleware,
-    # 前端开发服务器地址
-    allow_origins=["http://localhost:3000"],  # 允许前端访问
+    allow_origins=["*"],  # 在生产环境中应该限制为特定域名
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,  # 预检请求的缓存时间
+    allow_origin_regex=".*",  # 允许所有来源
 )
 
 # 注册路由

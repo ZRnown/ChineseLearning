@@ -1,0 +1,40 @@
+.tabs {
+  display: flex;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.tab {
+  padding: 0.5rem 1rem;
+  margin-right: 0.5rem;
+  border: none;
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  color: #10b981;
+  border-bottom: 2px solid #10b981;
+}
+
+.tab:hover {
+  color: #10b981;
+}
+
+.translation-selector {
+  margin-bottom: 1rem;
+}
+
+.translation-selector select {
+  padding: 0.5rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.25rem;
+  background-color: white;
+}
+
+.content-text, .translation-text {
+  line-height: 1.8;
+  white-space: pre-wrap;
+} 
