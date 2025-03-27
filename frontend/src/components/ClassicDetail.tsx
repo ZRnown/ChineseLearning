@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../utils/axios';
 import '../styles/ClassicDetail.css';
+import Translations from './Translations';
 
 interface Classic {
   id: number;
@@ -104,40 +105,40 @@ const ClassicDetail: React.FC = () => {
         <p>作者: {classic.author}</p>
         <p>朝代: {classic.dynasty}</p>
       </div>
-      
+
       <div className="tabs">
-        <button 
+        <button
           className={`tab ${activeTab === 'original' ? 'active' : ''}`}
           onClick={() => setActiveTab('original')}
         >
           原文
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'translation' ? 'active' : ''}`}
           onClick={() => setActiveTab('translation')}
         >
           译文
         </button>
-        <button 
+        <button
           className={`tab ${activeTab === 'notes' ? 'active' : ''}`}
           onClick={() => setActiveTab('notes')}
         >
           注释
         </button>
       </div>
-      
+
       {activeTab === 'original' && (
         <div className="classic-content">
           <div className="content-text">{classic.content}</div>
         </div>
       )}
-      
+
       {activeTab === 'translation' && (
         <div className="classic-translation">
           {translations.length > 0 ? (
             <>
               <div className="translation-selector">
-                <select 
+                <select
                   value={selectedTranslation?.id || ''}
                   onChange={(e) => {
                     const selected = translations.find(t => t.id === parseInt(e.target.value));
@@ -146,11 +147,11 @@ const ClassicDetail: React.FC = () => {
                 >
                   {translations.map(translation => (
                     <option key={translation.id} value={translation.id}>
-                      {translation.language === 'zh' ? '中文' : 
-                       translation.language === 'en' ? '英文' : 
-                       translation.language === 'ja' ? '日文' : 
-                       translation.language === 'ko' ? '韩文' : 
-                       translation.language}
+                      {translation.language === 'zh' ? '中文' :
+                        translation.language === 'en' ? '英文' :
+                          translation.language === 'ja' ? '日文' :
+                            translation.language === 'ko' ? '韩文' :
+                              translation.language}
                     </option>
                   ))}
                 </select>
@@ -166,7 +167,7 @@ const ClassicDetail: React.FC = () => {
           )}
         </div>
       )}
-      
+
       {activeTab === 'notes' && (
         <div className="comments-section">
           {comments.length > 0 ? (
@@ -186,6 +187,11 @@ const ClassicDetail: React.FC = () => {
           )}
         </div>
       )}
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold mb-4">翻译</h2>
+        <Translations classicId={classic.id} originalContent={classic.content} />
+      </div>
     </div>
   );
 };

@@ -21,6 +21,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 30
 # 标准的 OAuth2 scheme
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
+
 # 创建一个可选的 OAuth2 scheme
 class OAuth2PasswordBearerOptional(OAuth2PasswordBearer):
     async def __call__(self, request: Request):
@@ -29,6 +30,7 @@ class OAuth2PasswordBearerOptional(OAuth2PasswordBearer):
         if not authorization or scheme.lower() != "bearer":
             return None
         return param
+
 
 oauth2_scheme_optional = OAuth2PasswordBearerOptional(tokenUrl="token")
 
@@ -79,18 +81,19 @@ async def get_current_user(
 
 
 async def get_current_user_optional(
-    token: str = Depends(oauth2_scheme_optional), 
-    db: Session = Depends(get_db)
-):
+    token: str = Depends(oauth2_scheme_optional), db: Session = Depends(get_db)
+) -> Optional[models.User]:
+    """获取当前用户（可选），未登录时返回 None"""
     if not token:
         return None
+
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
-        if username is None:
+        email: str = payload.get("sub")
+        if email is None:
             return None
     except JWTError:
         return None
 
-    user = db.query(models.User).filter(models.User.username == username).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
     return user

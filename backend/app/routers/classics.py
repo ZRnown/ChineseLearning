@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from ..database import get_db
 from .. import models, schemas
-from ..routers.auth import get_current_user, get_current_user_optional
+from ..auth import get_current_user_optional, get_current_user
 from pydantic import BaseModel
 from datetime import datetime
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 
 class ClassicBase(BaseModel):
@@ -52,27 +54,44 @@ class Translation(TranslationBase):
 
 
 @router.get("/", response_model=List[schemas.Classic])
-async def get_classics(
-    skip: int = 0,
-    limit: int = 10,
+def get_classics(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user_optional),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
 ):
-    classics = db.query(models.Classic).offset(skip).limit(limit).all()
-    return classics
+    """获取古籍列表，支持分页"""
+    try:
+        logger.info(f"Fetching classics with skip={skip}, limit={limit}")
+        classics = db.query(models.Classic).offset(skip).limit(limit).all()
+        logger.info(f"Found {len(classics)} classics")
+        return classics
+    except Exception as e:
+        logger.error(f"Error fetching classics: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{classic_id}", response_model=schemas.Classic)
-@router.get("/{classic_id}/", response_model=schemas.Classic)
 def get_classic(
-    classic_id: int, 
-    db: Session = Depends(get_db)
+    classic_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
 ):
-    """获取单个古籍详情，无需登录"""
-    classic = db.query(models.Classic).filter(models.Classic.id == classic_id).first()
-    if classic is None:
-        raise HTTPException(status_code=404, detail="Classic not found")
-    return classic
+    """获取单个古籍详情"""
+    try:
+        logger.info(f"Fetching classic with id={classic_id}")
+        classic = (
+            db.query(models.Classic).filter(models.Classic.id == classic_id).first()
+        )
+        if not classic:
+            logger.warning(f"Classic not found with id={classic_id}")
+            raise HTTPException(status_code=404, detail="Classic not found")
+        return classic
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching classic: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/", response_model=schemas.Classic)
@@ -126,55 +145,107 @@ async def delete_classic(
     return {"message": "Classic deleted successfully"}
 
 
-@router.post("/{classic_id}/translations", response_model=Translation)
+@router.post("/{classic_id}/translations", response_model=schemas.Translation)
 def create_translation(
     classic_id: int,
-    translation: TranslationCreate,
+    translation: schemas.TranslationCreate,
     db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user_optional),
+    current_user: models.User = Depends(get_current_user),
 ):
-    db_classic = (
-        db.query(models.Classic).filter(models.Classic.id == classic_id).first()
-    )
-    if db_classic is None:
-        raise HTTPException(status_code=404, detail="Classic not found")
+    """创建古籍翻译"""
+    try:
+        logger.info(f"Creating translation for classic_id={classic_id}")
+        db_classic = (
+            db.query(models.Classic).filter(models.Classic.id == classic_id).first()
+        )
+        if not db_classic:
+            raise HTTPException(status_code=404, detail="Classic not found")
 
-    db_translation = models.Translation(**translation.dict())
-    db.add(db_translation)
-    db.commit()
-    db.refresh(db_translation)
-    return db_translation
+        db_translation = models.Translation(
+            **translation.dict(), classic_id=classic_id, user_id=current_user.id
+        )
+        db.add(db_translation)
+        db.commit()
+        db.refresh(db_translation)
+        return db_translation
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error creating translation: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
-@router.get("/{classic_id}/translations", response_model=List[Translation])
-def read_translations(
-    classic_id: int, language: Optional[str] = None, db: Session = Depends(get_db)
+@router.get("/{classic_id}/translations", response_model=List[schemas.Translation])
+def get_classic_translations(
+    classic_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
 ):
-    query = db.query(models.Translation).filter(
-        models.Translation.classic_id == classic_id
-    )
-    if language:
-        query = query.filter(models.Translation.language == language)
-    return query.all()
+    """获取古籍的翻译列表"""
+    try:
+        logger.info(f"Fetching translations for classic_id={classic_id}")
+        translations = (
+            db.query(models.Translation)
+            .filter(models.Translation.classic_id == classic_id)
+            .all()
+        )
+        logger.info(f"Found {len(translations)} translations")
+        return translations
+    except Exception as e:
+        logger.error(f"Error fetching translations: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
+
+
+@router.get(
+    "/{classic_id}/translations/{translation_id}", response_model=schemas.Translation
+)
+def get_translation(
+    classic_id: int,
+    translation_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
+):
+    """获取单个翻译详情"""
+    try:
+        logger.info(
+            f"Fetching translation with id={translation_id} for classic_id={classic_id}"
+        )
+        translation = (
+            db.query(models.Translation)
+            .filter(
+                models.Translation.id == translation_id,
+                models.Translation.classic_id == classic_id,
+            )
+            .first()
+        )
+        if not translation:
+            logger.warning(f"Translation not found with id={translation_id}")
+            raise HTTPException(status_code=404, detail="Translation not found")
+        return translation
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching translation: {str(e)}")
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/{classic_id}/comments", response_model=List[schemas.Note])
 @router.get("/{classic_id}/comments/", response_model=List[schemas.Note])
-def get_classic_comments(
-    classic_id: int,
-    page: int = 1,
-    db: Session = Depends(get_db)
-):
+def get_classic_comments(classic_id: int, page: int = 1, db: Session = Depends(get_db)):
     """获取古籍的所有评论，无需登录"""
     print(f"Fetching comments for classic {classic_id}, page {page}")
-    
+
     # 计算分页
     limit = 10
     skip = (page - 1) * limit
-    
-    notes = db.query(models.Note).filter(
-        models.Note.classic_id == classic_id
-    ).offset(skip).limit(limit).all()
-    
+
+    notes = (
+        db.query(models.Note)
+        .filter(models.Note.classic_id == classic_id)
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
     print(f"Found {len(notes)} comments")
     return notes

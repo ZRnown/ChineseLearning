@@ -15,8 +15,8 @@ import Translations from './components/Translations';
 
 const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
         <div className="min-h-screen bg-gray-50">
           <Navbar />
           <main>
@@ -40,8 +40,8 @@ const App: React.FC = () => {
             </Routes>
           </main>
         </div>
-      </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </Router>
   );
 };
 

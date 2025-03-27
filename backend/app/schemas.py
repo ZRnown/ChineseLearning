@@ -70,10 +70,17 @@ class Note(BaseModel):
         from_attributes = True
 
 
-class Translation(BaseModel):
-    id: int
+class TranslationBase(BaseModel):
     content: str
     language: str
+
+
+class TranslationCreate(TranslationBase):
+    pass
+
+
+class Translation(TranslationBase):
+    id: int
     classic_id: int
     created_at: datetime
 

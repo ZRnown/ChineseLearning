@@ -1,56 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { getClassics } from '../services/classics';
+import { Classic } from '../types/classic';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Toast from '../components/Toast';
-
-interface Classic {
-    id: number;
-    title: string;
-    author: string;
-    dynasty: string;
-    content: string;
-    category: string;
-    created_at: string;
-    is_favorite?: boolean;
-    is_liked?: boolean;
-    user_note?: string;
-    like_count?: number;
-}
 
 const Classics: React.FC = () => {
     const [classics, setClassics] = useState<Classic[]>([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [error, setError] = useState<string | null>(null);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
     const [page, setPage] = useState(1);
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-    useEffect(() => {
-        fetchClassics();
-    }, []);
-
     const fetchClassics = async (pageNum: number = 1) => {
         try {
-            const token = localStorage.getItem('token');
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
-
-            const response = await axios.get(`http://localhost:8000/api/classics/?skip=${(pageNum - 1) * 10}&limit=10`, {
-                headers
-            });
-
-            const data = response.data;
+            setLoading(pageNum === 1);
+            setError(null);
+            console.log('Fetching classics...');
+            const data = await getClassics((pageNum - 1) * 10);
+            console.log('Fetched classics:', data);
             setClassics(prev => pageNum === 1 ? data : [...prev, ...data]);
             setHasMore(data.length === 10);
             setPage(pageNum);
-            setLoading(false);
         } catch (err) {
-            setError('获取古籍列表失败');
-            setLoading(false);
+            console.error('Error in Classics component:', err);
+            setError('获取古籍列表失败，请稍后重试');
             setToast({ message: '获取古籍列表失败', type: 'error' });
+        } finally {
+            setLoading(false);
+            setIsLoadingMore(false);
         }
     };
+
+    useEffect(() => {
+        fetchClassics(1);
+    }, []);
 
     const handleLoadMore = () => {
         if (!isLoadingMore && hasMore) {
@@ -59,7 +45,7 @@ const Classics: React.FC = () => {
         }
     };
 
-    if (loading && page === 1) {
+    if (loading) {
         return (
             <div className="flex justify-center items-center min-h-screen">
                 <LoadingSpinner size="large" />
@@ -109,10 +95,7 @@ const Classics: React.FC = () => {
                             <p className="text-gray-500 text-sm line-clamp-3">{classic.content}</p>
                             <div className="mt-4 flex items-center justify-between">
                                 <span className="text-sm text-gray-500">
-                                    {classic.like_count || 0} 赞
-                                </span>
-                                <span className="text-sm text-gray-500">
-                                    {classic.category}
+                                    {classic.is_liked ? '已点赞' : '未点赞'}
                                 </span>
                             </div>
                         </div>
