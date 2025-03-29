@@ -32,11 +32,12 @@ app.add_middleware(
 # 注册路由
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(classics.router, prefix="/api/classics", tags=["classics"])
-app.include_router(
-    translations.router, prefix="/api/translations", tags=["translations"]
-)
+app.include_router(translations.router, prefix="/api/translations", tags=["translations"])
 app.include_router(notes.router, prefix="/api/notes", tags=["notes"])
 
+# 添加翻译路由
+from .routers.translations import translate_text
+app.post("/api/translate")(translate_text)
 
 @app.get("/")
 async def root():

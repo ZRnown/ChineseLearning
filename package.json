@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/axios": "^0.9.36",
+    "@types/node": "^22.13.14",
+    "@types/react": "^19.0.12",
+    "@types/react-dom": "^19.0.4"
+  },
+  "dependencies": {
+    "@heroicons/react": "^2.2.0",
+    "react-markdown": "^10.1.0"
+  }
+}

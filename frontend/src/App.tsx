@@ -36,7 +36,10 @@ const App: React.FC = () => {
               />
               <Route path="/translation" element={<Translation />} />
               <Route path="/notes" element={<Notes />} />
-              <Route path="/translations" element={<Translations />} />
+              <Route
+                path="/translations"
+                element={<Translations classicId={1} originalContent="Sample content" />}
+              />
             </Routes>
           </main>
         </div>

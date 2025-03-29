@@ -1,8 +1,10 @@
 from rest_framework import viewsets, status, permissions
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
+from django.conf import settings
+from rest_framework.permissions import AllowAny
 from .models import Classic, FavoriteCategory, Favorite, Note, Comment, Like
 from .serializers import (
     ClassicSerializer,
@@ -12,7 +14,12 @@ from .serializers import (
     CommentSerializer,
     LikeSerializer,
 )
-
+import tencentcloud.common.credential as credential
+from tencentcloud.common.profile.client_profile import ClientProfile
+from tencentcloud.common.profile.http_profile import HttpProfile
+from tencentcloud.common.exception.tencent_cloud_sdk_exception import TencentCloudSDKException
+from tencentcloud.tmt.v20180321 import tmt_client, models
+import json
 
 class StandardResultsSetPagination(PageNumberPagination):
     page_size = 10
@@ -103,3 +110,50 @@ class CommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         classic = get_object_or_404(Classic, pk=self.kwargs["classic_pk"])
         serializer.save(user=self.request.user, classic=classic)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def translate_view(request):
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+        text = data.get('text')
+        target_language = data.get('target')
+
+        if not text or not target_language:
+            return Response({"error": "Missing 'text' or 'target' parameter"}, status=400)
+
+        cred = credential.Credential(
+            settings.TENCENT_SECRET_ID,
+            settings.TENCENT_SECRET_KEY)
+
+        clientProfile = ClientProfile()
+        clientProfile.signMethod = "TC3-HMAC-SHA256"
+        httpProfile = HttpProfile()
+        httpProfile.endpoint = "tmt.tencentcloudapi.com"
+        clientProfile.httpProfile = httpProfile
+        client = tmt_client.TmtClient(cred, "ap-guangzhou", clientProfile)
+
+        req = models.TextTranslateRequest()
+        params = {
+            "SourceText": text,
+            "Source": "zh",
+            "Target": target_language,
+            "ProjectId": 0
+        }
+        req.from_json_string(json.dumps(params))
+
+        resp = client.TextTranslate(req)
+        resp_json = json.loads(resp.to_json_string())
+
+        translated_text = resp_json.get("TargetText", "")
+
+        return Response({"translation": translated_text})
+
+    except TencentCloudSDKException as err:
+        print(err)
+        return Response({"error": str(err)}, status=500)
+    except json.JSONDecodeError as e:
+        return Response({"error": "Invalid JSON format in request body"}, status=400)
+    except Exception as e:
+        return Response({"error": str(e)}, status=500)

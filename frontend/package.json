@@ -1,43 +1,36 @@
 {
-  "name": "frontend",
+  "name": "chinese-learning-frontend",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@headlessui/react": "^1.7.19",
-    "@heroicons/react": "^2.2.0",
-    "@tailwindcss/typography": "^0.5.10",
     "@types/react-router-dom": "^5.3.3",
-    "axios": "^1.6.7",
+    "axios": "^1.8.4",
+    "crypto-js": "^4.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^7.4.0",
-    "inflight": "^1.0.6",
-    "glob": "^9.0.0",
-    "rimraf": "^4.0.0",
-    "eslint": "^9.0.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.20.0",
+    "remark-gfm": "^4.0.1",
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
-    "@types/react": "^18.2.43",
-    "@types/react-dom": "^18.2.17",
-    "@typescript-eslint/eslint-plugin": "^6.14.0",
-    "@typescript-eslint/parser": "^6.14.0",
-    "@vitejs/plugin-react": "^4.2.1",
-    "autoprefixer": "^10.4.17",
-    "eslint": "^8.0.0",
-    "eslint-plugin-react-hooks": "^4.6.0",
-    "eslint-plugin-react-refresh": "^0.4.5",
-    "postcss": "^8.4.35",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8",
-    "@humanwhocodes/object-schema": "^2.0.3",
-    "@humanwhocodes/config-array": "^0.13.0"
+    "@tailwindcss/typography": "^0.5.16",
+    "@types/crypto-js": "^4.2.2",
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@types/uuid": "^9.0.8",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.14",
+    "postcss": "^8.4.24",
+    "tailwindcss": "^3.3.2",
+    "typescript": "^5.0.2",
+    "vite": "^5.0.0"
   }
 }

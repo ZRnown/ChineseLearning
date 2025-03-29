@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Translation } from '../types/translation';
 
-const API_URL = 'http://localhost:8000/api';
+const API_URL = '/api';
 
 const getAuthToken = () => {
     return localStorage.getItem('token');
@@ -14,7 +14,7 @@ export const getTranslations = async (classicId: number): Promise<Translation[]>
             throw new Error('未登录');
         }
 
-        const response = await axios.get(`${API_URL}/classics/${classicId}/translations/`, {
+        const response = await axios.get(`${API_URL}/api/classics/${classicId}/translations/`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -41,7 +41,7 @@ export const createTranslation = async (
         }
 
         const response = await axios.post(
-            `${API_URL}/classics/${classicId}/translations/`,
+            `${API_URL}/api/classics/${classicId}/translations/`,
             {
                 content,
                 language
@@ -64,7 +64,7 @@ export const createTranslation = async (
 
 export const getTranslation = async (classicId: number, translationId: number): Promise<Translation> => {
     try {
-        const response = await axios.get(`${API_URL}/classics/${classicId}/translations/${translationId}/`, {
+        const response = await axios.get(`${API_URL}/api/classics/${classicId}/translations/${translationId}/`, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',

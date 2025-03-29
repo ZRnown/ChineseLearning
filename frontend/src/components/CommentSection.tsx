@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { getComments, createComment } from '../services/comments';
+import api from '../utils/axios';
 import { Comment } from '../types/comment';
-import InfiniteScroll from './InfiniteScroll';
 import LoadingSpinner from './LoadingSpinner';
 import Toast from './Toast';
-import { validateForm } from '../utils/validation';
 
 interface CommentSectionProps {
-    classicId: number;
+    classicId: string;
 }
 
-const COMMENT_RULES = {
-    content: {
-        required: true,
-        minLength: 1,
-        maxLength: 1000,
-        message: '评论内容不能为空',
-    },
-};
+interface CommentResponse {
+    comments: Comment[];
+    totalPages: number;
+}
 
 const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
     const { user } = useAuth();
@@ -30,19 +24,19 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
     const [hasMore, setHasMore] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
-    const [formErrors, setFormErrors] = useState<{ [key: string]: string | null }>({});
 
-    const fetchComments = async (pageNum: number = 1) => {
+    const fetchComments = async () => {
         try {
-            setLoading(pageNum === 1);
+            setLoading(true);
             setError(null);
-            const data = await getComments(classicId, pageNum);
-            setComments(prev => pageNum === 1 ? data : [...prev, ...data]);
-            setHasMore(data.length === 10);
-            setPage(pageNum);
-        } catch (err) {
-            console.error('Error fetching comments:', err);
-            setError('获取评论失败');
+            const response = await api.get<CommentResponse>(`/classics/${classicId}/comments`, {
+                params: { page }
+            });
+            setComments(prev => page === 1 ? response.data.comments : [...prev, ...response.data.comments]);
+            setHasMore(page < response.data.totalPages);
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            setError('评论加载失败，请稍后重试');
         } finally {
             setLoading(false);
             setIsLoadingMore(false);
@@ -50,13 +44,13 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
     };
 
     useEffect(() => {
-        fetchComments(1);
-    }, [classicId]);
+        fetchComments();
+    }, [classicId, page]);
 
     const handleLoadMore = () => {
         if (!isLoadingMore && hasMore) {
             setIsLoadingMore(true);
-            fetchComments(page + 1);
+            setPage(prev => prev + 1);
         }
     };
 
@@ -65,12 +59,14 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
         if (!newComment.trim() || !user) return;
 
         try {
-            const comment = await createComment(classicId, newComment);
-            setComments(prev => [comment, ...prev]);
+            const response = await api.post<Comment>(`/classics/${classicId}/comments`, {
+                content: newComment
+            });
+            setComments(prev => [response.data, ...prev]);
             setNewComment('');
             showToast('评论发表成功', 'success');
-        } catch (err) {
-            console.error('Error creating comment:', err);
+        } catch (error) {
+            console.error('Error creating comment:', error);
             setError('发表评论失败');
             showToast('评论发表失败', 'error');
         }
@@ -81,7 +77,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
     };
 
     if (loading) {
-        return <div className="text-center py-4">加载评论中...</div>;
+        return <div className="text-center py-4"><LoadingSpinner size="medium" /> 加载评论中...</div>;
     }
 
     return (
@@ -140,7 +136,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
                         disabled={isLoadingMore}
                         className="px-4 py-2 text-indigo-600 hover:text-indigo-800 disabled:opacity-50"
                     >
-                        {isLoadingMore ? '加载中...' : '加载更多'}
+                        {isLoadingMore ? <LoadingSpinner size="small" /> : '加载更多'}
                     </button>
                 </div>
             )}
@@ -156,4 +152,4 @@ const CommentSection: React.FC<CommentSectionProps> = ({ classicId }) => {
     );
 };
 
-export default CommentSection; 
+export default CommentSection;

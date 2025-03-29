@@ -4,60 +4,63 @@ export default {
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
+    darkMode: 'class',
     theme: {
         extend: {
             colors: {
-                'ink': {
-                    50: '#f5f5f5',
-                    100: '#e9e9e9',
-                    200: '#d9d9d9',
-                    300: '#c4c4c4',
-                    400: '#9d9d9d',
-                    500: '#7b7b7b',
-                    600: '#555555',
-                    700: '#434343',
-                    800: '#262626',
-                    900: '#171717',
-                },
-                'bamboo': {
-                    50: '#f0f7f4',
-                    100: '#dceee6',
-                    200: '#b9ddd0',
-                    300: '#8fc4b3',
-                    400: '#65a694',
-                    500: '#4a8b77',
-                    600: '#3a6f5f',
-                    700: '#31584c',
-                    800: '#2a473f',
-                    900: '#253b35',
-                },
-                'silk': {
-                    50: '#fdf6f6',
-                    100: '#fbe7e7',
-                    200: '#f5d3d3',
-                    300: '#efb5b5',
-                    400: '#e58d8d',
-                    500: '#d86464',
-                    600: '#c43d3d',
-                    700: '#a32d2d',
-                    800: '#872828',
-                    900: '#722525',
+                gray: {
+                    50: '#F9FAFB',
+                    100: '#F3F4F6',
+                    200: '#E5E7EB',
+                    300: '#D1D5DB',
+                    400: '#9CA3AF',
+                    500: '#6B7280',
+                    600: '#4B5563',
+                    700: '#374151',
+                    800: '#1F2937',
+                    900: '#111827',
                 },
             },
-            fontFamily: {
-                'serif': ['Noto Serif SC', 'serif'],
-                'sans': ['Noto Sans SC', 'sans-serif'],
-            },
-            backgroundImage: {
-                'paper-texture': "url('/textures/paper.png')",
-                'ink-splash': "url('/textures/ink-splash.png')",
-            },
-            boxShadow: {
-                'ink': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            typography: {
+                DEFAULT: {
+                    css: {
+                        maxWidth: 'none',
+                        color: '#333',
+                        a: {
+                            color: '#3182ce',
+                            '&:hover': {
+                                color: '#2c5282',
+                            },
+                        },
+                    },
+                },
+                dark: {
+                    css: {
+                        color: '#fff',
+                        a: {
+                            color: '#63b3ed',
+                            '&:hover': {
+                                color: '#90cdf4',
+                            },
+                        },
+                        h1: { color: '#fff' },
+                        h2: { color: '#fff' },
+                        h3: { color: '#fff' },
+                        h4: { color: '#fff' },
+                        h5: { color: '#fff' },
+                        h6: { color: '#fff' },
+                        strong: { color: '#fff' },
+                        code: { color: '#fff' },
+                        blockquote: {
+                            color: '#fff',
+                            borderLeftColor: '#4a5568',
+                        },
+                    },
+                },
             },
         },
     },
     plugins: [
         require('@tailwindcss/typography'),
     ],
-} 
+};

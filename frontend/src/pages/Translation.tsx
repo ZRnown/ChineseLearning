@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import LoadingSpinner from '../components/LoadingSpinner';
 import Toast from '../components/Toast';
+import { translateText } from '../api/translate';
 
 const Translation: React.FC = () => {
     const [sourceText, setSourceText] = useState('');
@@ -19,12 +19,8 @@ const Translation: React.FC = () => {
 
         setLoading(true);
         try {
-            const response = await axios.post('http://localhost:8000/api/translate/', {
-                text: sourceText,
-                source_lang: sourceLang,
-                target_lang: targetLang,
-            });
-            setTargetText(response.data.translation);
+            const translatedText = await translateText(sourceText, targetLang);
+            setTargetText(translatedText);
             setToast({ message: '翻译成功', type: 'success' });
         } catch (err) {
             setToast({ message: '翻译失败，请稍后重试', type: 'error' });

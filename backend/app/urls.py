@@ -15,4 +15,5 @@ comment_router.register(r"comments", views.CommentViewSet, basename="comment")
 urlpatterns = [
     path("", include(router.urls)),
     path("classics/<int:classic_pk>/", include(comment_router.urls)),
+    path('api/translate/', views.translate_view, name='translate'),
 ]
