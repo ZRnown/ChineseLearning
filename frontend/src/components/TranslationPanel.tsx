@@ -1,30 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowsRightLeftIcon, ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline';
+import { languages } from '../config/languages';
+import { translateText } from '../api/translate';
 
 interface TranslationPanelProps {
     className?: string;
     initialSourceText?: string;
     initialSourceLang?: string;
     initialTargetLang?: string;
+    selectedLanguage?: string; // 新增属性，用于接收选定的语言
 }
-
-interface Language {
-    code: string;
-    name: string;
-}
-
-const languages: Language[] = [
-    { code: 'zh', name: '中文' },
-    { code: 'en', name: 'English' },
-    { code: 'ja', name: '日本語' },
-    { code: 'ko', name: '한국어' },
-];
 
 export default function TranslationPanel({
     className = '',
     initialSourceText = '',
     initialSourceLang = 'zh',
     initialTargetLang = 'en',
+    selectedLanguage,
 }: TranslationPanelProps) {
     const [sourceText, setSourceText] = useState(initialSourceText);
     const [translatedText, setTranslatedText] = useState('');
@@ -52,25 +44,8 @@ export default function TranslationPanel({
         setIsLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:8000/api/translations/translate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    text: sourceText,
-                    source_lang: sourceLang,
-                    target_lang: targetLang,
-                }),
-                credentials: 'include',
-            });
-
-            if (!response.ok) {
-                throw new Error('翻译失败，请稍后重试');
-            }
-
-            const data = await response.json();
-            setTranslatedText(data.translated_text);
+            const translatedText = await translateText(sourceText, targetLang);
+            setTranslatedText(translatedText);
         } catch (error) {
             console.error('Translation error:', error);
             setError(error instanceof Error ? error.message : '翻译失败，请稍后重试');
@@ -200,4 +175,4 @@ export default function TranslationPanel({
             </div>
         </div>
     );
-} 
+}
