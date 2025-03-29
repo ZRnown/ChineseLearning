@@ -1,20 +1,18 @@
 export interface Classic {
-    id: number;
+    id: string;
     title: string;
     author: string;
     dynasty: string;
     content: string;
-    translation?: string;
-    created_at: string;
-    updated_at?: string;
-    is_favorite?: boolean;
-    is_liked?: boolean;
+    likes?: number;
+    category?: string;
 }
 
 export interface Translation {
-    id: number;
-    classic_id: number;
+    id: string;
+    classicId: string;
     content: string;
     language: string;
-    created_at: string;
+    translator: string;
+    createdAt: string;
 } 
