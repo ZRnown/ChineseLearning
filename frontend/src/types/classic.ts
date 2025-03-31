@@ -1,20 +1,27 @@
-export interface Classic {
-    id: string;
-    title: string;
-    author: string;
-    dynasty: string;
-    content: string;
-    likes?: number;
-    category?: string;
-    explanation?: string;
-    translation?: string;
+export interface Tag {
+    id: number;
+    name: string;
 }
 
 export interface Translation {
-    id: string;
-    classicId: string;
+    id: number;
+    classic_id: number;
     content: string;
+    translator?: string;
     language: string;
-    translator: string;
-    createdAt: string;
+    created_at: string;
+}
+
+export interface Classic {
+    id: number;
+    title: string;
+    content: string;
+    author?: string;
+    dynasty?: string;
+    category?: string;
+    source?: string;
+    created_at: string;
+    updated_at: string;
+    translations: Translation[];
+    tags: Tag[];
 } 

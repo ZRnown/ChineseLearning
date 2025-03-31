@@ -71,7 +71,7 @@ const ClassicDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
-  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'assistant', content: string, timestamp: Date}[]>([]);
+  const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant', content: string, timestamp: Date }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
 
@@ -223,7 +223,7 @@ ${classic?.content}
     try {
       // 使用API聊天接口
       const message = inputMessage; // 保存当前消息，因为inputMessage会被清空
-      
+
       // 首先尝试使用GeminiAPI直接获取回复
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
@@ -257,9 +257,9 @@ ${classic?.content}
       });
 
       console.log('API响应状态:', response.status);
-      
+
       let responseText = '';
-      
+
       if (response.ok) {
         const data = await response.json();
         if (data.candidates && data.candidates[0] && data.candidates[0].content) {
@@ -270,7 +270,7 @@ ${classic?.content}
       } else {
         responseText = `无法获取回答 (${response.status}: ${response.statusText})`;
       }
-      
+
       console.log('AI回复:', responseText);
 
       const assistantMessage = {
@@ -413,25 +413,23 @@ ${classic?.content}
           ) : (
             <>
               <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiGuide}</ReactMarkdown>
-              
+
               <div className="mt-8 border-t pt-6 border-[#e8e4e0]">
                 <h3 className="text-xl font-bold text-[#2c3e50] mb-4">继续对话</h3>
-                
+
                 {chatMessages.length > 0 && (
                   <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto p-4 border border-[#e8e4e0] rounded-lg">
                     {chatMessages.map((message, index) => (
                       <div
                         key={index}
-                        className={`flex ${
-                          message.role === 'user' ? 'justify-end' : 'justify-start'
-                        }`}
+                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'
+                          }`}
                       >
                         <div
-                          className={`max-w-[80%] rounded-lg p-3 ${
-                            message.role === 'user'
+                          className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
                               ? 'bg-[#8b4513] text-white'
                               : 'bg-[#f8f5f0] text-[#444]'
-                          }`}
+                            }`}
                         >
                           {message.role === 'assistant' ? (
                             <div className="prose prose-sm dark:prose-invert prose-headings:font-serif prose-headings:text-inherit prose-p:text-inherit prose-a:text-inherit max-w-none">
@@ -448,7 +446,7 @@ ${classic?.content}
                     ))}
                   </div>
                 )}
-                
+
                 <div className="flex space-x-2">
                   <textarea
                     value={inputMessage}
