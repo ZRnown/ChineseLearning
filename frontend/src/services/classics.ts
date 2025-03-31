@@ -46,7 +46,7 @@ export const getTranslations = async (classicId: number): Promise<Translation[]>
     }
 };
 
-export const getClassicById = async (id: string): Promise<Classic> => {
+export const getClassicById = async (id: string | number): Promise<Classic> => {
     try {
         const response = await api.get(`/classics/${id}`);
         return response.data;

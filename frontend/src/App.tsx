@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { BiHome, BiGlobe, BiCog, BiBook, BiBookOpen, BiUser } from 'react-icons/bi';
+import { BiHome, BiCog, BiBook, BiBookOpen, BiUser } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import Home from './pages/Home';
-import Translation from './pages/Translation';
 import Settings from './pages/Settings';
 import Classics from './pages/Classics';
 import ClassicDetail from './pages/ClassicDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AIDuide from './components/AIDuide';
-import TextInput from './components/TextInput';
-import LanguageSelector from './components/LanguageSelector';
 
 interface User {
   username: string;
@@ -59,10 +56,6 @@ const App: React.FC = () => {
                   <BiHome className="mr-2" />
                   首页
                 </Link>
-                <Link to="/translation" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#f8f5f0] hover:bg-[#6b3410] transition-colors">
-                  <BiGlobe className="mr-2" />
-                  翻译
-                </Link>
                 <Link to="/classics" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#f8f5f0] hover:bg-[#6b3410] transition-colors">
                   <BiBook className="mr-2" />
                   古籍列表
@@ -105,42 +98,11 @@ const App: React.FC = () => {
         <main className="flex-grow w-[65%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/translation" element={
-              <div className="space-y-8 w-full">
-                <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-                  <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">古文翻译</h2>
-                  <div className="space-y-6">
-                    <TextInput
-                      text={text}
-                      onTextChange={setText}
-                      onTranslate={handleTranslate}
-                    />
-                    <LanguageSelector
-                      selectedLanguage={selectedLanguage}
-                      onLanguageChange={setSelectedLanguage}
-                    />
-                  </div>
-                </div>
-
-                {translatedText && (
-                  <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-                    <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">翻译结果</h2>
-                    <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] prose-p:text-[#444]">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{translatedText}</ReactMarkdown>
-                    </div>
-                  </div>
-                )}
-
-                {showAIDuide && (
-                  <AIDuide text={text} language={selectedLanguage} />
-                )}
-              </div>
-            } />
             <Route path="/classics" element={<Classics />} />
             <Route path="/classics/:id" element={<ClassicDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/register" element={<Register onRegister={handleLogin} />} />
+            <Route path="/register" element={<Register />} />
           </Routes>
         </main>
 

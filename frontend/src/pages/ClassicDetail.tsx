@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getClassicById } from '../services/classics';
 import { Classic } from '../types/classic';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { BiTime, BiBook, BiHeart, BiGlobe, BiChat } from 'react-icons/bi';
+import { BiTime, BiHeart, BiChat } from 'react-icons/bi';
 import '../styles/ClassicDetail.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -71,12 +71,15 @@ const ClassicDetail: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [isGeneratingGuide, setIsGeneratingGuide] = useState(false);
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'assistant', content: string, timestamp: Date}[]>([]);
+  const [inputMessage, setInputMessage] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
 
   useEffect(() => {
     const fetchClassic = async () => {
       try {
         setLoading(true);
-        const data = await getClassicById(id!);
+        const data = await getClassicById(parseInt(id!));
         setClassic(data);
       } catch (err) {
         console.error('Error fetching classic:', err);
@@ -204,6 +207,99 @@ ${classic?.content}
     setNewComment('');
   };
 
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim() || isSendingMessage || !classic) return;
+
+    const userMessage = {
+      role: 'user' as 'user' | 'assistant',
+      content: inputMessage,
+      timestamp: new Date(),
+    };
+
+    setChatMessages(prev => [...prev, userMessage]);
+    setInputMessage('');
+    setIsSendingMessage(true);
+
+    try {
+      // 使用API聊天接口
+      const message = inputMessage; // 保存当前消息，因为inputMessage会被清空
+      
+      // 首先尝试使用GeminiAPI直接获取回复
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `你是一个专业的中国古典文学导读助手。现在正在解读《${classic.title}》。
+              请基于以下信息回答用户的问题：
+              原文：${classic.content}
+              
+              用户问题: ${message}
+              
+              请用通俗易懂的语言回答，并保持专业性和准确性。
+              
+              要求：
+              1. 使用Markdown格式进行回复
+              2. 可以使用标题(#)、子标题(##)、列表、引用(>)等Markdown语法
+              3. 重要内容或术语可以用**加粗**或*斜体*标注
+              4. 如果需要引用原文，请使用>引用格式
+              5. 适当使用分段和列表，使内容易于阅读`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 2048,
+          }
+        })
+      });
+
+      console.log('API响应状态:', response.status);
+      
+      let responseText = '';
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+          responseText = data.candidates[0].content.parts[0].text;
+        } else {
+          responseText = '服务器返回了空响应';
+        }
+      } else {
+        responseText = `无法获取回答 (${response.status}: ${response.statusText})`;
+      }
+      
+      console.log('AI回复:', responseText);
+
+      const assistantMessage = {
+        role: 'assistant' as 'user' | 'assistant',
+        content: responseText,
+        timestamp: new Date(),
+      };
+
+      setChatMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      console.error('发送消息失败:', error);
+      const errorMessage = {
+        role: 'assistant' as 'user' | 'assistant',
+        content: '抱歉，发送消息失败，请稍后重试。',
+        timestamp: new Date(),
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsSendingMessage(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -263,7 +359,7 @@ ${classic?.content}
               : 'bg-[#8b4513] hover:bg-[#6b3410] text-white'
               }`}
           >
-            <BiGlobe className="mr-2" />
+            <span className="mr-2">🌐</span>
             {isTranslating ? '翻译中...' : '翻译'}
           </button>
           <button
@@ -274,7 +370,7 @@ ${classic?.content}
               : 'bg-[#8b4513] hover:bg-[#6b3410] text-white'
               }`}
           >
-            <BiBook className="mr-2" />
+            <span className="mr-2">📚</span>
             {isGeneratingGuide ? '生成中...' : 'AI导读'}
           </button>
         </div>
@@ -315,7 +411,67 @@ ${classic?.content}
               <div className="text-[#999] text-sm">让AI为你解读文字背后的深意</div>
             </div>
           ) : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiGuide}</ReactMarkdown>
+            <>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiGuide}</ReactMarkdown>
+              
+              <div className="mt-8 border-t pt-6 border-[#e8e4e0]">
+                <h3 className="text-xl font-bold text-[#2c3e50] mb-4">继续对话</h3>
+                
+                {chatMessages.length > 0 && (
+                  <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto p-4 border border-[#e8e4e0] rounded-lg">
+                    {chatMessages.map((message, index) => (
+                      <div
+                        key={index}
+                        className={`flex ${
+                          message.role === 'user' ? 'justify-end' : 'justify-start'
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[80%] rounded-lg p-3 ${
+                            message.role === 'user'
+                              ? 'bg-[#8b4513] text-white'
+                              : 'bg-[#f8f5f0] text-[#444]'
+                          }`}
+                        >
+                          {message.role === 'assistant' ? (
+                            <div className="prose prose-sm dark:prose-invert prose-headings:font-serif prose-headings:text-inherit prose-p:text-inherit prose-a:text-inherit max-w-none">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                            </div>
+                          ) : (
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                          )}
+                          <span className="text-xs opacity-70 mt-1 block">
+                            {message.timestamp.toLocaleTimeString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <div className="flex space-x-2">
+                  <textarea
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="输入您的问题..."
+                    className="flex-1 p-3 border border-[#e8e4e0] rounded-lg bg-[#f8f5f0] focus:outline-none focus:ring-2 focus:ring-[#8b4513] resize-none"
+                    rows={2}
+                  />
+                  <button
+                    onClick={handleSendMessage}
+                    disabled={isSendingMessage || !inputMessage.trim()}
+                    className="px-4 py-2 bg-[#8b4513] text-white rounded-lg hover:bg-[#6b3410] disabled:opacity-50 disabled:cursor-not-allowed self-end h-12 flex items-center justify-center"
+                  >
+                    {isSendingMessage ? (
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <span>发送</span>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>

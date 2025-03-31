@@ -86,3 +86,13 @@ class Translation(TranslationBase):
 
     class Config:
         from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    user: User  # 这里引用之前定义的 User schema
+
+
+class TokenData(BaseModel):
+    username: str | None = None

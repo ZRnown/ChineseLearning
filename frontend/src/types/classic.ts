@@ -6,6 +6,8 @@ export interface Classic {
     content: string;
     likes?: number;
     category?: string;
+    explanation?: string;
+    translation?: string;
 }
 
 export interface Translation {
