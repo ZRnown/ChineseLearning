@@ -1,25 +1,38 @@
 import api from '../utils/axios';
 import { Classic, Translation } from '../types/classic';
+import { AxiosError } from 'axios';
 
-const API_URL = 'http://localhost:8000/api';
+interface PaginatedResponse<T> {
+    items: T[];
+    total: number;
+    skip: number;
+    limit: number;
+}
 
-export const getClassics = async (offset: number = 0, limit: number = 10): Promise<Classic[]> => {
+export const getClassics = async (
+    offset: number = 0,
+    limit: number = 9,
+    category?: string,
+    dynasty?: string,
+    tag?: string
+): Promise<PaginatedResponse<Classic>> => {
+    console.log('Fetching classics with params:', { offset, limit, category, dynasty, tag });
     try {
-        console.log('Fetching classics with params:', { offset, limit });
-        const response = await api.get('/classics', {
-            params: { offset, limit }
+        const response = await api.get<Classic[]>('/classics', {
+            params: { skip: offset, limit, category, dynasty, tag },
+            timeout: 30000
         });
 
-        console.log('Classics response status:', response.status);
-        console.log('Classics response headers:', response.headers);
-        console.log('Classics response data:', response.data);
+        // 创建一个符合 PaginatedResponse 接口的对象
+        const paginatedResponse: PaginatedResponse<Classic> = {
+            items: response.data,
+            total: response.data.length, // 使用实际返回的数据长度
+            skip: offset,
+            limit: limit
+        };
 
-        if (!Array.isArray(response.data)) {
-            console.error('Response data is not an array:', response.data);
-            throw new Error('Invalid response format');
-        }
-
-        return response.data;
+        console.log('Classics response:', paginatedResponse);
+        return paginatedResponse;
     } catch (error) {
         console.error('Error fetching classics:', error);
         throw error;
@@ -42,7 +55,7 @@ export const getTranslations = async (classicId: number): Promise<Translation[]>
         return response.data;
     } catch (error) {
         console.error('Error fetching translations:', error);
-        throw new Error('获取翻译列表失败');
+        throw error;
     }
 };
 
@@ -58,8 +71,7 @@ export const getClassicById = async (id: string | number): Promise<Classic> => {
 
 export const likeClassic = async (id: string): Promise<void> => {
     try {
-        const response = await api.post(`/classics/${id}/like`);
-        return response.data;
+        await api.post(`/classics/${id}/like`);
     } catch (error) {
         console.error('Error liking classic:', error);
         throw error;
