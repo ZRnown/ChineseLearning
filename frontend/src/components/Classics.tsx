@@ -2,31 +2,27 @@ import React, { useState, useEffect } from 'react';
 import { getClassics } from '../services/classics';
 import { Classic } from '../types/classic';
 import LoadingSpinner from './LoadingSpinner';
+import Pagination from './Pagination';
 
 const Classics: React.FC = () => {
     const [classics, setClassics] = useState<Classic[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [page, setPage] = useState(1);
-    const [hasMore, setHasMore] = useState(true);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const itemsPerPage = 10;
 
-    const fetchClassics = async () => {
+    const fetchClassics = async (page: number) => {
         try {
             setLoading(true);
             setError(null);
             console.log('Fetching classics...');
-            const skip = (page - 1) * 10;
-            const data = await getClassics(skip, 10);
-            if (data.length < 10) {
-                setHasMore(false);
-            } else {
-                setHasMore(true);
-            }
-            if (page === 1) {
-                setClassics(data);
-            } else {
-                setClassics(prev => [...prev, ...data]);
-            }
+            const skip = (page - 1) * itemsPerPage;
+            const response = await getClassics(skip, itemsPerPage);
+            setClassics(response.items);
+            setTotalItems(response.total);
+            setTotalPages(Math.ceil(response.total / itemsPerPage));
         } catch (err) {
             console.error('Error in Classics component:', err);
             setError(err instanceof Error ? err.message : '获取古籍列表失败');
@@ -36,13 +32,11 @@ const Classics: React.FC = () => {
     };
 
     useEffect(() => {
-        fetchClassics();
-    }, [page]);
+        fetchClassics(currentPage);
+    }, [currentPage]);
 
-    const loadMore = () => {
-        if (!loading && hasMore) {
-            setPage(prev => prev + 1);
-        }
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
     };
 
     if (error) {
@@ -55,6 +49,10 @@ const Classics: React.FC = () => {
 
     return (
         <div className="space-y-4">
+            <div className="mb-4 text-right text-gray-600">
+                共 {totalItems} 条记录，当前显示第 {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} 条
+            </div>
+
             {classics.map((classic) => (
                 <div key={classic.id} className="bg-white p-4 rounded-lg shadow">
                     <h2 className="text-xl font-semibold">{classic.title}</h2>
@@ -63,18 +61,21 @@ const Classics: React.FC = () => {
                     <p className="mt-2 text-gray-700">{classic.content}</p>
                 </div>
             ))}
+
             {loading && (
                 <div className="flex justify-center py-4">
                     <LoadingSpinner />
                 </div>
             )}
-            {!loading && hasMore && (
-                <button
-                    onClick={loadMore}
-                    className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
-                >
-                    加载更多
-                </button>
+
+            {totalPages > 1 && (
+                <div className="mt-8">
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={handlePageChange}
+                    />
+                </div>
             )}
         </div>
     );

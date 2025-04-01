@@ -1,23 +1,47 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BiUser, BiLockAlt } from 'react-icons/bi';
+import { login } from '../services/auth';
 
-const Login: React.FC = () => {
+interface User {
+    username: string;
+    email: string;
+}
+
+interface LoginResponse {
+    user: User;
+    token: string;
+}
+
+interface LoginProps {
+    onLogin: (user: User) => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
         try {
-            // 登录逻辑
-            // 登录成功后跳转
+            const response = await login(username, password) as LoginResponse;
+            onLogin(response.user);
             navigate('/');
         } catch (err) {
-            setError('登录失败，请检查用户名和密码');
+            console.error('Login error:', err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('登录失败，请检查用户名和密码');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -34,7 +58,7 @@ const Login: React.FC = () => {
                             <label htmlFor="username" className="sr-only">用户名</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <BiUser className="h-5 w-5 text-[#8b4513]" />
+                                    <BiUser size={20} className="text-[#8b4513]" />
                                 </div>
                                 <input
                                     id="username"
@@ -52,7 +76,7 @@ const Login: React.FC = () => {
                             <label htmlFor="password" className="sr-only">密码</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <BiLockAlt className="h-5 w-5 text-[#8b4513]" />
+                                    <BiLockAlt size={20} className="text-[#8b4513]" />
                                 </div>
                                 <input
                                     id="password"
@@ -69,7 +93,7 @@ const Login: React.FC = () => {
                     </div>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center">
+                        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
                             {error}
                         </div>
                     )}
@@ -77,9 +101,10 @@ const Login: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513]"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            登录
+                            {loading ? '登录中...' : '登录'}
                         </button>
                     </div>
 

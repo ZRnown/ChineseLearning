@@ -32,6 +32,7 @@ class Classic(Base):
     dynasty = Column(String, nullable=True)
     author = Column(String, nullable=True)
     explanation = Column(String, nullable=True)
+    category = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 

@@ -27,6 +27,7 @@ class ClassicBase(BaseModel):
     dynasty: Optional[str] = None
     author: Optional[str] = None
     explanation: Optional[str] = None
+    category: Optional[str] = None
 
 
 class ClassicCreate(ClassicBase):
@@ -39,6 +40,7 @@ class ClassicUpdate(BaseModel):
     dynasty: Optional[str] = None
     author: Optional[str] = None
     explanation: Optional[str] = None
+    category: Optional[str] = None
 
 
 class Classic(ClassicBase):

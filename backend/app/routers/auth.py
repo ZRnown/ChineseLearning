@@ -12,6 +12,11 @@ from ..dependencies import (
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
+import logging
+
+# 配置日志
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
@@ -19,26 +24,32 @@ router = APIRouter()
 @router.post("/register", response_model=schemas.User)
 def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
     try:
+        logger.info(f"开始注册用户: {user.username}")
+        
         # 检查用户名是否已存在
         db_user = (
             db.query(models.User).filter(models.User.username == user.username).first()
         )
         if db_user:
+            logger.warning(f"用户名已存在: {user.username}")
             raise HTTPException(status_code=400, detail="Username already registered")
 
         # 检查邮箱是否已存在
         db_email = db.query(models.User).filter(models.User.email == user.email).first()
         if db_email:
+            logger.warning(f"邮箱已存在: {user.email}")
             raise HTTPException(status_code=400, detail="Email already registered")
 
         # 验证密码强度
         if len(user.password) < 6:
+            logger.warning(f"密码长度不足: {user.username}")
             raise HTTPException(
                 status_code=400, detail="Password must be at least 6 characters long"
             )
 
         # 验证邮箱格式
         if "@" not in user.email:
+            logger.warning(f"邮箱格式无效: {user.email}")
             raise HTTPException(status_code=400, detail="Invalid email format")
 
         # 创建新用户
@@ -51,17 +62,17 @@ def register(user: schemas.UserCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_user)
 
-        print(f"User registered successfully: {user.username}")
+        logger.info(f"用户注册成功: {user.username}")
         return db_user
 
     except HTTPException as he:
         # 重新抛出 HTTP 异常
-        print(f"Registration failed for {user.username}: {he.detail}")
+        logger.error(f"用户注册失败 {user.username}: {he.detail}")
         raise he
     except Exception as e:
         # 处理其他异常
-        error_msg = f"Registration failed: {str(e)}"
-        print(error_msg)
+        error_msg = f"注册失败: {str(e)}"
+        logger.error(error_msg)
         raise HTTPException(status_code=500, detail=error_msg)
 
 

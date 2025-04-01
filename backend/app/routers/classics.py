@@ -53,7 +53,14 @@ class Translation(TranslationBase):
         from_attributes = True
 
 
-@router.get("/", response_model=List[schemas.Classic])
+class PaginatedResponse(BaseModel):
+    items: List[Classic]
+    total: int
+    skip: int
+    limit: int
+
+
+@router.get("/", response_model=PaginatedResponse)
 def get_classics(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
@@ -63,9 +70,19 @@ def get_classics(
     """获取古籍列表，支持分页"""
     try:
         logger.info(f"Fetching classics with skip={skip}, limit={limit}")
+        # 获取总数
+        total = db.query(models.Classic).count()
+        # 获取分页数据
         classics = db.query(models.Classic).offset(skip).limit(limit).all()
         logger.info(f"Found {len(classics)} classics")
-        return classics
+        
+        # 返回分页响应
+        return {
+            "items": classics,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
     except Exception as e:
         logger.error(f"Error fetching classics: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")

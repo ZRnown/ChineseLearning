@@ -80,6 +80,7 @@ const ClassicDetail: React.FC = () => {
       try {
         setLoading(true);
         const data = await getClassicById(parseInt(id!));
+        console.log('获取到的古籍数据：', data);
         setClassic(data);
       } catch (err) {
         console.error('Error fetching classic:', err);

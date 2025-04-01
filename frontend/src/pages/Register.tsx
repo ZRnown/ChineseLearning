@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BiUser, BiEnvelope, BiLockAlt } from 'react-icons/bi';
+import { register } from '../services/auth';
 
 const Register: React.FC = () => {
     const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ const Register: React.FC = () => {
         confirmPassword: ''
     });
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -23,17 +25,26 @@ const Register: React.FC = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setLoading(true);
 
         if (formData.password !== formData.confirmPassword) {
             setError('两次输入的密码不一致');
+            setLoading(false);
             return;
         }
 
         try {
-            // 注册逻辑
+            await register(formData.username, formData.password, formData.email);
             navigate('/login');
         } catch (err) {
-            setError('注册失败，请稍后重试');
+            console.error('注册错误:', err);
+            if (err instanceof Error) {
+                setError(err.message);
+            } else {
+                setError('注册失败，请稍后重试');
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -121,7 +132,7 @@ const Register: React.FC = () => {
                     </div>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center">
+                        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
                             {error}
                         </div>
                     )}
@@ -129,9 +140,10 @@ const Register: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513]"
+                            disabled={loading}
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            注册
+                            {loading ? '注册中...' : '注册'}
                         </button>
                     </div>
 
