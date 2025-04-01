@@ -64,16 +64,29 @@ class PaginatedResponse(BaseModel):
 def get_classics(
     skip: int = Query(0, ge=0),
     limit: int = Query(10, ge=1, le=100),
+    category: Optional[str] = None,
+    dynasty: Optional[str] = None,
     db: Session = Depends(get_db),
     current_user: Optional[models.User] = Depends(get_current_user_optional),
 ):
-    """获取古籍列表，支持分页"""
+    """获取古籍列表，支持分页和筛选"""
     try:
-        logger.info(f"Fetching classics with skip={skip}, limit={limit}")
+        logger.info(f"Fetching classics with params: skip={skip}, limit={limit}, category={category}, dynasty={dynasty}")
+        
+        # 构建查询
+        query = db.query(models.Classic)
+        
+        # 应用筛选条件
+        if category:
+            query = query.filter(models.Classic.category == category)
+        if dynasty:
+            query = query.filter(models.Classic.dynasty == dynasty)
+            
         # 获取总数
-        total = db.query(models.Classic).count()
-        # 获取分页数据
-        classics = db.query(models.Classic).offset(skip).limit(limit).all()
+        total = query.count()
+        
+        # 应用分页
+        classics = query.offset(skip).limit(limit).all()
         logger.info(f"Found {len(classics)} classics")
         
         # 返回分页响应

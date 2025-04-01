@@ -1,32 +1,36 @@
 import api from '../utils/axios';
 import { Classic, Translation } from '../types/classic';
 
-interface PaginatedResponse<T> {
-    items: T[];
+interface GetClassicsParams {
+    skip?: number;
+    limit?: number;
+    category?: string;
+    dynasty?: string;
+}
+
+interface PaginatedResponse {
+    items: Classic[];
     total: number;
     skip: number;
     limit: number;
 }
 
-export const getClassics = async (
-    offset: number = 0,
-    limit: number = 10,
-    category?: string,
-    dynasty?: string,
-    tag?: string
-): Promise<PaginatedResponse<Classic>> => {
-    console.log('Fetching classics with params:', { offset, limit, category, dynasty, tag });
+export const getClassics = async (params: GetClassicsParams = {}): Promise<PaginatedResponse> => {
     try {
-        const response = await api.get<PaginatedResponse<Classic>>('/classics', {
-            params: { skip: offset, limit, category, dynasty, tag },
-            timeout: 30000
+        console.log('Fetching classics with params:', params);
+        const response = await api.get<PaginatedResponse>('/classics', {
+            params: {
+                skip: params.skip || 0,
+                limit: params.limit || 9,
+                category: params.category || undefined,
+                dynasty: params.dynasty || undefined
+            }
         });
-
-        console.log('Classics response:', response.data);
+        console.log('Response data:', response.data);
         return response.data;
     } catch (error) {
         console.error('Error fetching classics:', error);
-        throw error;
+        throw new Error('获取古籍列表失败');
     }
 };
 
@@ -50,13 +54,13 @@ export const getTranslations = async (classicId: number): Promise<Translation[]>
     }
 };
 
-export const getClassicById = async (id: string | number): Promise<Classic> => {
+export const getClassicById = async (id: number): Promise<Classic> => {
     try {
         const response = await api.get<Classic>(`/classics/${id}`);
         return response.data;
     } catch (error) {
-        console.error('Error fetching classic by id:', error);
-        throw error;
+        console.error('Error fetching classic:', error);
+        throw new Error('获取古籍详情失败');
     }
 };
 
