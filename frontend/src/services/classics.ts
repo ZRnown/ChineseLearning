@@ -6,6 +6,7 @@ interface GetClassicsParams {
     limit?: number;
     category?: string;
     dynasty?: string;
+    tag?: string;
 }
 
 interface PaginatedResponse {
@@ -23,7 +24,8 @@ export const getClassics = async (params: GetClassicsParams = {}): Promise<Pagin
                 skip: params.skip || 0,
                 limit: params.limit || 9,
                 category: params.category || undefined,
-                dynasty: params.dynasty || undefined
+                dynasty: params.dynasty || undefined,
+                tag: params.tag || undefined
             }
         });
         console.log('Response data:', response.data);
