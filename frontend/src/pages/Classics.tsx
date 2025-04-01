@@ -24,18 +24,18 @@ const Classics: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            
+
             const params = {
                 skip: (page - 1) * itemsPerPage,
                 limit: itemsPerPage,
                 dynasty: selectedDynasty || undefined,
                 category: selectedCategory || undefined
             };
-            
+
             console.log('Fetching with params:', params);
             const response = await getClassics(params);
             console.log('Received response:', response);
-            
+
             if (response.items) {
                 setClassics(response.items);
                 setTotalItems(response.total);
@@ -62,21 +62,19 @@ const Classics: React.FC = () => {
         console.log('Dynasty changed to:', value);
         setSelectedDynasty(value);
         setCurrentPage(1);
-        fetchClassics(1);
-    }, [fetchClassics]);
+    }, []);
 
     const handleCategoryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
         console.log('Category changed to:', value);
         setSelectedCategory(value);
         setCurrentPage(1);
-        fetchClassics(1);
-    }, [fetchClassics]);
+    }, []);
 
-    // 初始加载和页码变化时获取数据
+    // 初始加载和筛选条件变化时获取数据
     useEffect(() => {
         fetchClassics(currentPage);
-    }, [currentPage, fetchClassics]);
+    }, [currentPage, selectedDynasty, selectedCategory, fetchClassics]);
 
     const handlePageChange = (page: number) => {
         console.log('Page changing to:', page);
@@ -158,7 +156,7 @@ const Classics: React.FC = () => {
                                     to={`/classics/${classic.id}`}
                                     className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                 >
-                                    <h2 className="text-xl font-semibold mb-2">{classic.title}</h2>
+                                    <h2 className="text-2xl font-serif font-bold mb-2 text-black tracking-wide">{classic.title}</h2>
                                     <p className="text-gray-600 mb-2">
                                         {classic.author} · {classic.dynasty}
                                     </p>
@@ -179,7 +177,7 @@ const Classics: React.FC = () => {
                             ))
                         ) : (
                             <div className="col-span-full text-center text-gray-500 py-8">
-                                暂无古籍数据
+                                寻寻觅觅，冷冷清清，暂未找到相应古籍。
                             </div>
                         )}
                     </div>
