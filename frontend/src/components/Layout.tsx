@@ -1,10 +1,15 @@
 import { Fragment } from 'react'
 import { Disclosure, Menu, Transition } from '@headlessui/react'
 import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'
+import { Outlet } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from './Footer';
+import ThemeToggle from './ThemeToggle';
 
 const navigation = [
     { name: '首页', href: '/', current: true },
     { name: '古籍库', href: '/classics', current: false },
+    { name: '古文翻译', href: '/translation', current: false }, // 添加古文翻译导航项
     { name: '我的收藏', href: '/favorites', current: false },
 ]
 
@@ -12,9 +17,10 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
+// 修改 Layout 组件，添加 Footer
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-paper-texture">
+        <div className="min-h-screen bg-paper-texture flex flex-col">
             <Disclosure as="nav" className="bg-white/80 backdrop-blur-sm shadow-ink">
                 {({ open }) => (
                     <>
@@ -81,11 +87,30 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
             </Disclosure>
 
-            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex-grow">
                 <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-ink p-6">
                     {children}
                 </div>
             </main>
+            
+            <Footer />
         </div>
     )
-} 
+}
+
+// 删除了重复的Layout组件定义
+// const Layout = () => {
+//   return (
+//     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 dark:text-white transition-colors">
+//       <Navbar>
+//         <ThemeToggle />
+//       </Navbar>
+//       <main className="flex-grow container mx-auto px-4 py-8">
+//         <Outlet />
+//       </main>
+//       <Footer />
+//     </div>
+//   );
+// };
+// 
+// export default Layout;

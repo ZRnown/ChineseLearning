@@ -1,67 +1,47 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { FaBook, FaHome, FaList, FaGlobe, FaCog } from 'react-icons/fa';
+// 移除未使用的 useAuth 导入或使用它
+// import { useAuth } from '../contexts/AuthContext';
 
 const Navbar: React.FC = () => {
-    const { user, logout } = useAuth();
+    // 移除未使用的解构变量
+    // const { user, logout } = useAuth();
 
     return (
-        <nav className="bg-white shadow-lg">
-            <div className="max-w-7xl mx-auto px-4">
-                <div className="flex justify-between h-16">
-                    <div className="flex">
-                        <div className="flex-shrink-0 flex items-center">
-                            <Link to="/" className="text-xl font-bold text-indigo-600">
-                                中国古典文学
-                            </Link>
-                        </div>
-                        <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                            <Link
-                                to="/"
-                                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                            >
-                                首页
-                            </Link>
-                            <Link
-                                to="/classics"
-                                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                            >
-                                古籍列表
-                            </Link>
-                        </div>
-                    </div>
-                    <div className="flex items-center">
-                        {user ? (
-                            <div className="flex items-center space-x-4">
-                                <span className="text-gray-700">{user.username}</span>
-                                <button
-                                    onClick={logout}
-                                    className="bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-red-700"
-                                >
-                                    退出
-                                </button>
-                            </div>
-                        ) : (
-                            <div className="flex items-center space-x-4">
-                                <Link
-                                    to="/login"
-                                    className="bg-indigo-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-indigo-700"
-                                >
-                                    登录
-                                </Link>
-                                <Link
-                                    to="/register"
-                                    className="bg-green-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-green-700"
-                                >
-                                    注册
-                                </Link>
-                            </div>
-                        )}
-                    </div>
+        <nav className="bg-[#8b4513] text-white p-4">
+            <div className="container mx-auto flex justify-between items-center">
+                <div className="flex items-center">
+                    <Link to="/" className="flex items-center">
+                        <FaBook className="mr-2" />
+                        <span className="text-xl font-bold">古文导读</span>
+                    </Link>
+                </div>
+                
+                <div className="flex items-center space-x-6">
+                    <Link to="/" className="hover:text-gray-300 flex items-center">
+                        <FaHome className="mr-1" />
+                        首页
+                    </Link>
+                    
+                    <Link to="/classics" className="hover:text-gray-300 flex items-center">
+                        <FaList className="mr-1" />
+                        古籍列表
+                    </Link>
+                    
+                    <Link to="/translation" className="hover:text-gray-300 flex items-center">
+                        <FaGlobe className="mr-1" />
+                        古文翻译
+                    </Link>
+                    
+                    <Link to="/settings" className="hover:text-gray-300 flex items-center">
+                        <FaCog className="mr-1" />
+                        设置
+                    </Link>
                 </div>
             </div>
         </nav>
     );
 };
 
-export default Navbar; 
+export default Navbar;

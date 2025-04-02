@@ -151,9 +151,9 @@ const Classics: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {classics && classics.length > 0 ? (
                             classics.map((classic) => (
-                                <Link
+                                <Link 
                                     key={classic.id}
-                                    to={`/classics/${classic.id}`}
+                                    to={`/classic/${classic.id}`} // 修改为/classic/而不是/classics/
                                     className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                 >
                                     <h2 className="text-2xl font-serif font-bold mb-2 text-black tracking-wide">{classic.title}</h2>
@@ -165,7 +165,7 @@ const Classics: React.FC = () => {
                                         <div className="mt-4 flex flex-wrap gap-2">
                                             {classic.tags.map((tag) => (
                                                 <span
-                                                    key={tag.id}
+                                                    key={tag.id} // 确保这里有key属性
                                                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
                                                 >
                                                     {tag.name}
@@ -197,4 +197,4 @@ const Classics: React.FC = () => {
     );
 };
 
-export default Classics; 
+export default Classics;

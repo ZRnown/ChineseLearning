@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { BiHome, BiCog, BiBook, BiBookOpen, BiUser } from 'react-icons/bi';
+import { BiHome, BiCog, BiBook, BiBookOpen, BiUser, BiGlobe } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -12,12 +12,15 @@ import ClassicDetail from './pages/ClassicDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import AIDuide from './components/AIDuide';
+import Translation from './pages/Translation';
 
+// 定义用户接口
 interface User {
   username: string;
   email: string;
 }
 
+// 只保留一个App组件
 const App: React.FC = () => {
   const [text, setText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
@@ -60,6 +63,11 @@ const App: React.FC = () => {
                   <BiBook className="mr-2" />
                   古籍列表
                 </Link>
+                {/* 添加古文翻译链接 */}
+                <Link to="/translation" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#f8f5f0] hover:bg-[#6b3410] transition-colors">
+                  <BiGlobe className="mr-2" />
+                  古文翻译
+                </Link>
                 <Link to="/settings" className="flex items-center px-3 py-2 rounded-md text-sm font-medium text-[#f8f5f0] hover:bg-[#6b3410] transition-colors">
                   <BiCog className="mr-2" />
                   设置
@@ -99,10 +107,11 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/classics" element={<Classics />} />
-            <Route path="/classics/:id" element={<ClassicDetail />} />
+            <Route path="/classic/:id" element={<ClassicDetail />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/translation" element={<Translation />} />
           </Routes>
         </main>
 

@@ -89,11 +89,19 @@ const ClassicDetail: React.FC = () => {
         setLoading(false);
       }
     };
-
+  
     if (id) {
       fetchClassic();
     }
   }, [id]);
+
+  // 添加调试信息
+  useEffect(() => {
+    console.log('ClassicDetail组件加载，ID:', id);
+    console.log('Classic数据:', classic);
+    console.log('Loading状态:', loading);
+    console.log('Error状态:', error);
+  }, [id, classic, loading, error]);
 
   const handleTranslate = async () => {
     try {
