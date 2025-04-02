@@ -12,27 +12,8 @@ export interface User {
   created_at: string;
 }
 
-// 古籍相关类型
-export interface Classic {
-  id: number;
-  title: string;
-  author: string;
-  originalText: string;
-  contentTitle: string;
-  created_at: string;
-  updated_at: string;
-}
-
-// 翻译相关类型
-export interface Translation {
-  id: number;
-  content: string;
-  classic_id: number;
-  language: string;
-  user_id: number;
-  created_at: string;
-  updated_at: string;
-}
+// 导出 classic.ts 中的类型
+export * from './classic';
 
 // 评论相关类型
 export interface Comment {

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from sqlalchemy import or_  # 添加这一行
 from typing import List, Optional
 from ..database import get_db
 from .. import models, schemas
@@ -279,3 +280,154 @@ def get_classic_comments(classic_id: int, page: int = 1, db: Session = Depends(g
 
     print(f"Found {len(notes)} comments")
     return notes
+
+
+# 将搜索路由移到其他路由之前，避免路径冲突
+@router.get("/search")
+async def search_classics(
+    query: str,  # 移除Query验证器，简化参数定义
+    search_type: str = "all",
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
+):
+    """搜索古籍，支持按标题、内容、作者或全部字段搜索"""
+    try:
+        # 记录请求参数，帮助调试
+        logger.info(f"搜索请求参数: query={query}, search_type={search_type}, skip={skip}, limit={limit}")
+        
+        # 参数验证
+        if not query:
+            raise HTTPException(status_code=400, detail="搜索关键词不能为空")
+        
+        if isinstance(limit, str):
+            try:
+                limit = int(limit)
+            except ValueError:
+                limit = 10
+                
+        if isinstance(skip, str):
+            try:
+                skip = int(skip)
+            except ValueError:
+                skip = 0
+        
+        if limit < 1 or limit > 100:
+            limit = 10
+            
+        if skip < 0:
+            skip = 0
+            
+        # 构建查询
+        base_query = db.query(models.Classic)
+        
+        # 根据搜索类型应用不同的过滤条件
+        if search_type == "title":
+            filter_condition = models.Classic.title.contains(query)
+        elif search_type == "content":
+            filter_condition = models.Classic.content.contains(query)
+        elif search_type == "author":
+            filter_condition = models.Classic.author.contains(query)
+        else:  # "all" 或其他情况
+            filter_condition = or_(
+                models.Classic.title.contains(query),
+                models.Classic.content.contains(query),
+                models.Classic.author.contains(query)
+            )
+        
+        search_query = base_query.filter(filter_condition)
+        
+        # 获取总数
+        total = search_query.count()
+        
+        # 应用分页
+        classics = search_query.offset(skip).limit(limit).all()
+        logger.info(f"找到 {len(classics)} 条匹配的古籍")
+        
+        # 返回分页响应
+        return {
+            "items": classics,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    except HTTPException as he:
+        logger.error(f"搜索古籍HTTP异常: {str(he)}")
+        raise
+    except Exception as e:
+        logger.error(f"搜索古籍时出错: {str(e)}")
+        # 返回更详细的错误信息
+        raise HTTPException(status_code=500, detail=f"搜索古籍时出错: {str(e)}")
+
+
+from pydantic import BaseModel
+
+# 添加搜索请求模型
+class SearchRequest(BaseModel):
+    query: str
+    search_type: str = "all"
+
+@router.post("/search", response_model=PaginatedResponse)
+async def search_classics_post(
+    search_req: SearchRequest,
+    skip: int = 0,
+    limit: int = 10,
+    db: Session = Depends(get_db),
+    current_user: Optional[models.User] = Depends(get_current_user_optional),
+):
+    """搜索古籍，支持按标题、内容、作者或全部字段搜索（POST方法）"""
+    try:
+        query = search_req.query
+        search_type = search_req.search_type
+        
+        logger.info(f"POST搜索古籍: query={query}, type={search_type}, skip={skip}, limit={limit}")
+        
+        # 参数验证
+        if not query:
+            raise HTTPException(status_code=400, detail="搜索关键词不能为空")
+        
+        if limit < 1 or limit > 100:
+            limit = 10
+            
+        if skip < 0:
+            skip = 0
+            
+        # 构建查询
+        base_query = db.query(models.Classic)
+        
+        # 根据搜索类型应用不同的过滤条件
+        if search_type == "title":
+            filter_condition = models.Classic.title.contains(query)
+        elif search_type == "content":
+            filter_condition = models.Classic.content.contains(query)
+        elif search_type == "author":
+            filter_condition = models.Classic.author.contains(query)
+        else:  # "all" 或其他情况
+            filter_condition = or_(
+                models.Classic.title.contains(query),
+                models.Classic.content.contains(query),
+                models.Classic.author.contains(query)
+            )
+        
+        search_query = base_query.filter(filter_condition)
+        
+        # 获取总数
+        total = search_query.count()
+        
+        # 应用分页
+        classics = search_query.offset(skip).limit(limit).all()
+        logger.info(f"找到 {len(classics)} 条匹配的古籍")
+        
+        # 返回分页响应
+        return {
+            "items": classics,
+            "total": total,
+            "skip": skip,
+            "limit": limit
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"搜索古籍时出错: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"搜索古籍时出错: {str(e)}")

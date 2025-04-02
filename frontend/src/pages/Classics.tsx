@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { getClassics } from '../services/classics';
+import { getClassics, searchClassics } from '../services/classics';
 import { Classic } from '../types/classic';
 import Pagination from '../components/Pagination';
 
@@ -13,6 +13,9 @@ const Classics: React.FC = () => {
     const [totalItems, setTotalItems] = useState(0);
     const [selectedDynasty, setSelectedDynasty] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [searchType, setSearchType] = useState<'title' | 'content' | 'author' | 'all'>('all');
+    const [isSearchMode, setIsSearchMode] = useState(false);
     const itemsPerPage = 9;
 
     // 朝代选项
@@ -56,6 +59,44 @@ const Classics: React.FC = () => {
         }
     }, [selectedDynasty, selectedCategory, itemsPerPage]);
 
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchQuery.trim()) return;
+
+        try {
+            setLoading(true);
+            setError(null);
+            setIsSearchMode(true);
+
+            const response = await searchClassics({
+                query: searchQuery.trim(),
+                searchType
+            });
+
+            if (response.items) {
+                setClassics(response.items);
+                setTotalItems(response.items.length);
+                setTotalPages(1);
+                setCurrentPage(1);
+            } else {
+                setClassics([]);
+                setTotalItems(0);
+                setTotalPages(1);
+            }
+        } catch (err) {
+            console.error('搜索失败:', err);
+            setError('搜索失败，请稍后重试');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const resetSearch = () => {
+        setSearchQuery('');
+        setIsSearchMode(false);
+        setCurrentPage(1);
+    };
+
     // 处理筛选条件变化
     const handleDynastyChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
         const value = e.target.value;
@@ -73,8 +114,10 @@ const Classics: React.FC = () => {
 
     // 初始加载和筛选条件变化时获取数据
     useEffect(() => {
-        fetchClassics(currentPage);
-    }, [currentPage, selectedDynasty, selectedCategory, fetchClassics]);
+        if (!isSearchMode) {
+            fetchClassics(currentPage);
+        }
+    }, [currentPage, selectedDynasty, selectedCategory, fetchClassics, isSearchMode]);
 
     const handlePageChange = (page: number) => {
         console.log('Page changing to:', page);
@@ -83,7 +126,11 @@ const Classics: React.FC = () => {
 
     const handleRetry = () => {
         setError(null);
-        fetchClassics(currentPage);
+        if (isSearchMode) {
+            handleSearch(new Event('submit') as any);
+        } else {
+            fetchClassics(currentPage);
+        }
     };
 
     if (loading) {
@@ -98,46 +145,93 @@ const Classics: React.FC = () => {
         <div className="container mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold text-center mb-8">古籍列表</h1>
 
-            {/* 筛选区域 */}
-            <div className="mb-6 flex flex-wrap gap-4">
-                <div className="flex items-center">
-                    <label className="mr-2 text-gray-700">朝代：</label>
-                    <select
-                        value={selectedDynasty}
-                        onChange={handleDynastyChange}
-                        className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        <option value="">全部</option>
-                        {dynastyOptions.map((dynasty) => (
-                            <option key={dynasty} value={dynasty}>
-                                {dynasty}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex items-center">
-                    <label className="mr-2 text-gray-700">分类：</label>
-                    <select
-                        value={selectedCategory}
-                        onChange={handleCategoryChange}
-                        className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                    >
-                        <option value="">全部</option>
-                        {categoryOptions.map((category) => (
-                            <option key={category} value={category}>
-                                {category}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+            {/* 搜索区域 */}
+            <div className="mb-6">
+                <form onSubmit={handleSearch} className="flex items-center justify-center space-x-4 mb-4">
+                    <div className="relative flex-1 max-w-2xl">
+                        <input
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="请输入搜索关键词..."
+                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] bg-white"
+                        />
+                        <button
+                            type="submit"
+                            disabled={loading || !searchQuery.trim()}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-[#8B4513] text-white rounded-md hover:bg-[#6B3410] transition-colors disabled:opacity-50"
+                        >
+                            {loading ? '搜索中...' : '搜索'}
+                        </button>
+                    </div>
+                    <div className="flex items-center">
+                        <select
+                            value={searchType}
+                            onChange={(e) => setSearchType(e.target.value as any)}
+                            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] bg-white"
+                        >
+                            <option value="all">全部</option>
+                            <option value="title">标题</option>
+                            <option value="content">全文</option>
+                            <option value="author">作者</option>
+                        </select>
+                    </div>
+                </form>
+
+                {isSearchMode && (
+                    <div className="text-center">
+                        <button 
+                            onClick={resetSearch}
+                            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                        >
+                            返回全部古籍
+                        </button>
+                    </div>
+                )}
             </div>
+
+            {/* 筛选区域 */}
+            {!isSearchMode && (
+                <div className="mb-6 flex flex-wrap gap-4 justify-center">
+                    <div className="flex items-center">
+                        <label className="mr-2 text-gray-700">朝代：</label>
+                        <select
+                            value={selectedDynasty}
+                            onChange={handleDynastyChange}
+                            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
+                        >
+                            <option value="">全部</option>
+                            {dynastyOptions.map((dynasty) => (
+                                <option key={dynasty} value={dynasty}>
+                                    {dynasty}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="flex items-center">
+                        <label className="mr-2 text-gray-700">分类：</label>
+                        <select
+                            value={selectedCategory}
+                            onChange={handleCategoryChange}
+                            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
+                        >
+                            <option value="">全部</option>
+                            {categoryOptions.map((category) => (
+                                <option key={category} value={category}>
+                                    {category}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                </div>
+            )}
 
             {error ? (
                 <div className="text-center py-4">
                     <p className="text-red-500 mb-2">{error}</p>
                     <button
                         onClick={handleRetry}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                        className="px-4 py-2 bg-[#8B4513] text-white rounded-lg hover:bg-[#6B3410]"
                     >
                         重试
                     </button>
@@ -153,7 +247,7 @@ const Classics: React.FC = () => {
                             classics.map((classic) => (
                                 <Link 
                                     key={classic.id}
-                                    to={`/classic/${classic.id}`} // 修改为/classic/而不是/classics/
+                                    to={`/classic/${classic.id}`}
                                     className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                 >
                                     <h2 className="text-2xl font-serif font-bold mb-2 text-black tracking-wide">{classic.title}</h2>
@@ -165,7 +259,7 @@ const Classics: React.FC = () => {
                                         <div className="mt-4 flex flex-wrap gap-2">
                                             {classic.tags.map((tag) => (
                                                 <span
-                                                    key={tag.id} // 确保这里有key属性
+                                                    key={tag.id}
                                                     className="px-2 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
                                                 >
                                                     {tag.name}
@@ -177,12 +271,12 @@ const Classics: React.FC = () => {
                             ))
                         ) : (
                             <div className="col-span-full text-center text-gray-500 py-8">
-                                寻寻觅觅，冷冷清清，暂未找到相应古籍。
+                                {isSearchMode ? '没有找到匹配的古籍' : '寻寻觅觅，冷冷清清，暂未找到相应古籍。'}
                             </div>
                         )}
                     </div>
 
-                    {totalPages > 1 && (
+                    {totalPages > 1 && !isSearchMode && (
                         <div className="mt-8">
                             <Pagination
                                 currentPage={currentPage}
