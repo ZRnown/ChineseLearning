@@ -1,13 +1,12 @@
-# CORS设置
-CORS_ALLOW_ALL_ORIGINS = True  # 开发环境下允许所有源
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOWED_ORIGINS = [
+# CORS settings for FastAPI
+CORS_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:3000",
     "http://127.0.0.1:3000",
 ]
-CORS_ALLOW_METHODS = [
+
+CORS_METHODS = [
     "DELETE",
     "GET",
     "OPTIONS",
@@ -15,7 +14,8 @@ CORS_ALLOW_METHODS = [
     "POST",
     "PUT",
 ]
-CORS_ALLOW_HEADERS = [
+
+CORS_HEADERS = [
     "accept",
     "accept-encoding",
     "authorization",
@@ -27,14 +27,10 @@ CORS_ALLOW_HEADERS = [
     "x-requested-with",
 ]
 
-# 添加CORS中间件
-MIDDLEWARE = [
-    "corsheaders.middleware.CorsMiddleware",  # 添加到最上面
-    "django.middleware.security.SecurityMiddleware",
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.common.CommonMiddleware",
-    "django.middleware.csrf.CsrfViewMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.clickjacking.XFrameOptionsMiddleware",
-]
+# Database settings
+DATABASE_URL = "sqlite:///./app.db"
+
+# Security settings
+SECRET_KEY = "your-secret-key-here"  # Change this in production
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
