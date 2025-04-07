@@ -46,14 +46,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-md space-y-8 bg-white rounded-xl shadow-lg p-10 border border-[#e8e4e0]">
+        <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0] py-12">
+            <div className="w-[95%] max-w-md mx-auto space-y-8 bg-white rounded-xl shadow-lg p-6 sm:p-10 border border-[#e8e4e0]">
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold text-[#2c3e50] font-serif">登录</h2>
+                    <h2 className="text-3xl font-bold text-[#2c3e50] font-serif">登录</h2>
                     <p className="mt-2 text-sm text-[#666]">探索古文的智慧</p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    <div className="rounded-md shadow-sm space-y-4">
+                <form className="mt-8 flex-column" onSubmit={handleSubmit}>
+                    <div className="rounded-md shadow-sm flex-column">
                         <div>
                             <label htmlFor="username" className="sr-only">用户名</label>
                             <div className="relative">
@@ -72,6 +72,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                                 />
                             </div>
                         </div>
+                        
                         <div>
                             <label htmlFor="password" className="sr-only">密码</label>
                             <div className="relative">
@@ -98,24 +99,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
                         </div>
                     )}
 
-                    <div>
+                    <div className="flex-column">
                         <button
                             type="submit"
                             disabled={loading}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513] disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#8b4513] hover:bg-[#6b3410] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8b4513]"
                         >
-                            {loading ? '登录中...' : '登录'}
+                            {loading ? (
+                                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                '登录'
+                            )}
                         </button>
-                    </div>
-
-                    <div className="text-center">
-                        <span className="text-sm text-[#666]">还没有账号？</span>
-                        <Link
-                            to="/register"
-                            className="ml-2 text-sm text-[#8b4513] hover:text-[#6b3410] hover:underline"
-                        >
-                            立即注册
-                        </Link>
                     </div>
                 </form>
             </div>
@@ -123,4 +118,4 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
     );
 };
 
-export default Login; 
+export default Login;

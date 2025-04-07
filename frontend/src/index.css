@@ -26,6 +26,25 @@
   }
 }
 
+/* 通用布局类 */
+@layer components {
+  .page-container {
+    @apply min-h-screen w-[95%] mx-auto py-8 flex flex-col space-y-8;
+  }
+  
+  .content-section {
+    @apply bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0] w-full;
+  }
+  
+  .section-title {
+    @apply text-2xl font-bold text-[#2c3e50] font-serif mb-6;
+  }
+  
+  .flex-column {
+    @apply flex flex-col space-y-4;
+  }
+}
+
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -120,4 +139,74 @@ select {
 /* 代码块样式 */
 .prose pre {
     @apply bg-gray-100 dark:bg-gray-800 rounded-lg p-4;
+}
+
+/* 在现有样式之后添加 */
+
+/* 响应式容器 */
+.responsive-container {
+  width: 95%;
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 古文标题样式 */
+.ancient-title {
+  font-family: "FangSong", "仿宋", STKaiti, KaiTi, serif;
+  color: #2c3e50;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-align: center;
+  font-size: 2.5rem;
+}
+
+/* 古文文本样式 */
+.ancient-text {
+  font-family: "FangSong", "仿宋", STKaiti, KaiTi, serif;
+  font-size: 1.1rem;
+  line-height: 1.8;
+}
+
+/* 防止文本在大屏幕上过度拉伸 */
+@media (min-width: 1280px) {
+  .prose {
+    max-width: 65ch;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  p {
+    max-width: 65ch;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+  h2 {
+    font-size: 1.25rem;
+  }
+  p {
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 768px) {
+  h1 {
+    font-size: 1.75rem;
+  }
+  h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 769px) {
+  h1 {
+    font-size: 2rem;
+  }
+  h2 {
+    font-size: 1.75rem;
+  }
 }

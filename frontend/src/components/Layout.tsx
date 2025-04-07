@@ -17,14 +17,13 @@ function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-// 修改 Layout 组件，添加 Footer
 export default function Layout({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-paper-texture flex flex-col">
             <Disclosure as="nav" className="bg-white/80 backdrop-blur-sm shadow-ink">
                 {({ open }) => (
                     <>
-                        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="w-[95%] max-w-[1280px] mx-auto">
                             <div className="flex h-16 justify-between">
                                 <div className="flex">
                                     <div className="flex flex-shrink-0 items-center">
@@ -87,8 +86,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 )}
             </Disclosure>
 
-            <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 flex-grow">
-                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-ink p-6">
+            <main className="w-[95%] max-w-[1280px] mx-auto py-8 flex-grow">
+                <div className="bg-white/80 backdrop-blur-sm rounded-lg shadow-ink p-4 sm:p-6">
                     {children}
                 </div>
             </main>
@@ -98,7 +97,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     )
 }
 
-// 删除了重复的Layout组件定义
 // const Layout = () => {
 //   return (
 //     <div className="flex flex-col min-h-screen bg-white dark:bg-gray-900 dark:text-white transition-colors">
