@@ -58,8 +58,26 @@ const ClassicsList: React.FC = () => {
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">古籍列表</h1>
+      <h1 className="text-3xl font-bold mb-6 font-serif text-[#8b4513] text-center">古籍列表</h1>
       
+      <div className="mb-8">
+        <ClassicSearch 
+          onSearchResults={handleSearchResults} 
+          onSearchStart={handleSearchStart}
+          onSearchEnd={handleSearchEnd}
+        />
+      </div>
+      
+      {isSearchMode && (
+        <div className="mb-4 flex justify-between items-center">
+          <button 
+            onClick={resetSearch}
+            className="px-4 py-2 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            返回全部古籍
+          </button>
+        </div>
+      )}
       <div className="mb-6">
         {/* 筛选器 */}
         <div className="flex flex-wrap gap-4 mb-4 justify-center">

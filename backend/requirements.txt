@@ -11,3 +11,4 @@ python-dotenv==1.0.0
 transformers==4.36.2
 # torch==2.1.2  # 暂时注释掉这一行
 sentencepiece==0.1.99
+pypinyin==0.50.0  # 添加pypinyin库
