@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BiArrowBack } from 'react-icons/bi';
 import { FaGlobe, FaRobot } from 'react-icons/fa';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 const Translation: React.FC = () => {
     const [text, setText] = useState('');
@@ -141,16 +143,45 @@ ${text}
 4. 思想内涵探讨
 5. 历史文化价值`;
             } else {
-                // 为其他语言准备相应的提示词
+                // 为所有语言创建完整的映射表
                 const languageMap: Record<string, string> = {
                     'English': 'English',
                     'Español': 'Spanish',
                     'Français': 'French',
                     'Deutsch': 'German',
                     'Русский': 'Russian',
+                    'العربية': 'Arabic',
                     '日本語': 'Japanese',
                     '한국어': 'Korean',
-                    // 其他语言可以根据需要添加
+                    'Português': 'Portuguese',
+                    'Italiano': 'Italian',
+                    'हिंदी': 'Hindi',
+                    'Türkçe': 'Turkish',
+                    'Nederlands': 'Dutch',
+                    'Polski': 'Polish',
+                    'Svenska': 'Swedish',
+                    'Dansk': 'Danish',
+                    'Suomi': 'Finnish',
+                    'Norsk': 'Norwegian',
+                    'Ελληνικά': 'Greek',
+                    'Čeština': 'Czech',
+                    'Română': 'Romanian',
+                    'Magyar': 'Hungarian',
+                    'ไทย': 'Thai',
+                    'Bahasa Indonesia': 'Indonesian',
+                    'Tiếng Việt': 'Vietnamese',
+                    'Українська': 'Ukrainian',
+                    'Српски': 'Serbian',
+                    'Български': 'Bulgarian',
+                    'Slovenčina': 'Slovak',
+                    'Hrvatski': 'Croatian',
+                    'Slovenščina': 'Slovenian',
+                    'Eesti': 'Estonian',
+                    'Latviešu': 'Latvian',
+                    'Lietuvių': 'Lithuanian',
+                    'עברית': 'Hebrew',
+                    'বাংলা': 'Bengali',
+                    'Kiswahili': 'Swahili',
                 };
                 
                 const targetLanguage = languageMap[selectedLanguage] || 'English';
@@ -200,15 +231,21 @@ ${text}
     };
 
     return (
+<<<<<<< HEAD
         <div className="container mx-auto px-4 py-8 max-w-4xl bg-[#f8f5f0]">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h1 className="text-4xl font-bold mb-6 font-serif text-[#8b4513] text-center">古文翻译</h1>
                 <p className="text-center text-gray-600 mb-6">让古典文学焕发新生，让智慧跨越时空</p>
+=======
+        <div className="w-[95%] max-w-[1280px] mx-auto py-8 bg-[#f8f5f0]">
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                <h1 className="text-4xl font-bold text-[#2c3e50] font-serif mb-4">古文翻译</h1>
+>>>>>>> c641e8cb25b5f8859f09b3a3a95b6808a9391041
                 
                 <div className="mb-4">
                     <textarea
                         id="classic-content"
-                        className="w-full p-4 border border-gray-300 rounded-lg mb-4 min-h-[120px]"
+                        className="w-full p-3 sm:p-4 border border-gray-300 rounded-lg mb-4 min-h-[120px] ancient-text"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         placeholder="请输入要翻译的古文内容..."
@@ -216,10 +253,15 @@ ${text}
                 </div>
             </div>
 
+<<<<<<< HEAD
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">选择翻译语言</h2>
+=======
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4">选择翻译语言</h2>
+>>>>>>> c641e8cb25b5f8859f09b3a3a95b6808a9391041
                 
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 mb-6">
                     {languages.map((lang) => (
                         <button
                             key={lang.code}
@@ -235,7 +277,7 @@ ${text}
                     ))}
                 </div>
                 
-                <div className="flex space-x-4">
+                <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                     <button
                         onClick={handleTranslate}
                         className="flex items-center justify-center px-6 py-3 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors"
@@ -257,12 +299,17 @@ ${text}
             </div>
 
             {/* 翻译结果区域 */}
+<<<<<<< HEAD
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">翻译结果</h2>
+=======
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4">翻译结果</h2>
+>>>>>>> c641e8cb25b5f8859f09b3a3a95b6808a9391041
                 
                 {loading ? (
-                    <div className="text-center py-8">
-                        <p className="text-xl mb-4">正在翻译中...</p>
+                    <div className="text-center py-6 sm:py-8">
+                        <p className="text-lg sm:text-xl mb-4">正在翻译中...</p>
                         <p className="text-gray-500">静候佳音，让文字跨越语言的界限</p>
                     </div>
                 ) : error ? (
@@ -271,10 +318,12 @@ ${text}
                     </div>
                 ) : translatedText ? (
                     <div className="prose max-w-none">
-                        {translatedText}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {translatedText}
+                        </ReactMarkdown>
                     </div>
                 ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 sm:py-8">
                         <p className="mb-4">选择语言并点击翻译按钮</p>
                         <p className="text-gray-500">让文字跨越语言的界限</p>
                     </div>
@@ -282,12 +331,17 @@ ${text}
             </div>
             
             {/* AI导读区域 */}
+<<<<<<< HEAD
             <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">AI导读</h2>
+=======
+            <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6">
+                <h2 className="text-xl sm:text-2xl font-bold mb-4">AI导读</h2>
+>>>>>>> c641e8cb25b5f8859f09b3a3a95b6808a9391041
                 
                 {aiLoading ? (
-                    <div className="text-center py-8">
-                        <p className="text-xl mb-4">正在生成AI导读...</p>
+                    <div className="text-center py-6 sm:py-8">
+                        <p className="text-lg sm:text-xl mb-4">正在生成AI导读...</p>
                         <p className="text-gray-500">静候佳音，让AI为你解读文字背后的深意</p>
                     </div>
                 ) : aiError ? (
@@ -295,16 +349,18 @@ ${text}
                         {aiError}
                     </div>
                 ) : !text.trim() ? (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 sm:py-8">
                         <p className="mb-4">点击AI导读按钮开始分析</p>
                         <p className="text-gray-500">让AI为你解读文字背后的深意</p>
                     </div>
                 ) : aiGuideText ? (
                     <div className="prose max-w-none">
-                        {aiGuideText}
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {aiGuideText}
+                        </ReactMarkdown>
                     </div>
                 ) : (
-                    <div className="text-center py-8">
+                    <div className="text-center py-6 sm:py-8">
                         <p className="mb-4">点击AI导读按钮开始分析</p>
                         <p className="text-gray-500">让AI为你解读古文背后的深意</p>
                     </div>

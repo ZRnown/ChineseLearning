@@ -31,9 +31,9 @@ const features = [
 
 const Home: React.FC = () => {
     return (
-        <div className="space-y-12">
+        <div className="page-container">
             {/* 欢迎区域 */}
-            <div className="text-center py-12">
+            <div className="content-section text-center">
                 <h1 className="text-4xl font-bold text-[#2c3e50] font-serif mb-4">古文导读</h1>
                 <p className="text-xl text-[#666] mb-8">让古典文学焕发新生，让智慧跨越时空</p>
                 <Link
@@ -45,24 +45,27 @@ const Home: React.FC = () => {
             </div>
 
             {/* 功能区域 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {features.map((feature, index) => (
-                    <Link
-                        key={index}
-                        to={feature.link}
-                        className="bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0] hover:shadow-xl transition-shadow"
-                    >
-                        <div className="text-[#8b4513] mb-4">{feature.icon}</div>
-                        <h3 className="text-xl font-bold text-[#2c3e50] font-serif mb-2">{feature.title}</h3>
-                        <p className="text-[#666]">{feature.description}</p>
-                    </Link>
-                ))}
+            <div className="content-section">
+                <h2 className="section-title">功能导航</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {features.map((feature, index) => (
+                        <Link
+                            key={index}
+                            to={feature.link}
+                            className="bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0] hover:shadow-xl transition-shadow"
+                        >
+                            <div className="text-[#8b4513] mb-4">{feature.icon}</div>
+                            <h3 className="text-xl font-bold text-[#2c3e50] font-serif mb-2">{feature.title}</h3>
+                            <p className="text-[#666]">{feature.description}</p>
+                        </Link>
+                    ))}
+                </div>
             </div>
 
             {/* 使用说明 */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0]">
-                <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-4">使用说明</h2>
-                <div className="space-y-4 text-[#666]">
+            <div className="content-section">
+                <h2 className="section-title">使用说明</h2>
+                <div className="flex-column text-[#666]">
                     <p>1. 点击"开始导读"进入古籍列表</p>
                     <p>2. 选择感兴趣的古籍进行阅读</p>
                     <p>3. 在古籍详情页面可以：</p>
