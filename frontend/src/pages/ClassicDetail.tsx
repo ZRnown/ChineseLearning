@@ -75,14 +75,14 @@ const ClassicDetail: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant', content: string, timestamp: Date }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
-  
+
   // 添加朗读功能相关状态
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const speechSynthesisRef = useRef<SpeechSynthesis | null>(null);
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  // 修改默认语音设置
+  // 设置默认语音为XiaoXiao
   const [selectedVoice, setSelectedVoice] = useState<string>('Microsoft Xiaoxiao Online (Natural) - Chinese (Mainland) (zh-CN)');
   // 设置默认语速为0.8（适中，更自然）
   const [speechRate, setSpeechRate] = useState<number>(0.8);
@@ -94,25 +94,25 @@ const ClassicDetail: React.FC = () => {
   const [currentSentenceIndex, setCurrentSentenceIndex] = useState<number>(-1);
   // 存储分割后的句子数组
   const [sentences, setSentences] = useState<string[]>([]);
-  
+
   // 添加拼音标注相关状态
   const [showPinyin, setShowPinyin] = useState(false);
   const [pinyinStyle, setPinyinStyle] = useState<'above' | 'below' | 'inline'>('above');
-  
+
   // 初始化语音合成和获取可用语音
   useEffect(() => {
     if (typeof window !== 'undefined') {
       speechSynthesisRef.current = window.speechSynthesis;
-      
+
       // 获取可用语音
       const loadVoices = () => {
         const voices = speechSynthesisRef.current?.getVoices() || [];
         console.log('可用语音列表:', voices); // 调试用，查看所有可用语音
-        
+
         // 优先选择中文语音，按优先级排序
         const chineseVoicePatterns = [
-          // 微软晓晓在线语音
-          { pattern: /Microsoft.*Xiaoxiao.*Online.*Natural.*Chinese/i, priority: 1 },
+          // 微软晓晓在线语音 - 设为最高优先级
+          { pattern: /Microsoft.*Xiaoxiao.*Online.*Natural.*Chinese|Microsoft.*Xiaoxiao|Xiaoxiao/i, priority: 1 },
           // 其他微软中文语音
           { pattern: /Microsoft.*Chinese|Microsoft.*Kangkang|Microsoft.*Yaoyao|Microsoft.*Huihui/i, priority: 2 },
           // 谷歌中文语音
@@ -122,28 +122,28 @@ const ClassicDetail: React.FC = () => {
           // 其他中文语音
           { pattern: /Chinese|Mandarin|zh[-_]CN|zh[-_]TW|zh[-_]HK|cmn/i, priority: 5 }
         ];
-        
+
         // 过滤并排序中文语音
         let chineseVoices = voices.filter(voice => {
           // 检查语音是否匹配任一中文模式
-          return chineseVoicePatterns.some(pattern => 
+          return chineseVoicePatterns.some(pattern =>
             pattern.pattern.test(voice.name) || pattern.pattern.test(voice.lang)
           );
         });
-        
+
         // 按优先级排序
         chineseVoices.sort((a, b) => {
-          const aPriority = chineseVoicePatterns.find(p => 
+          const aPriority = chineseVoicePatterns.find(p =>
             p.pattern.test(a.name) || p.pattern.test(a.lang)
           )?.priority || 999;
-          
-          const bPriority = chineseVoicePatterns.find(p => 
+
+          const bPriority = chineseVoicePatterns.find(p =>
             p.pattern.test(b.name) || p.pattern.test(b.lang)
           )?.priority || 999;
-          
+
           return aPriority - bPriority;
         });
-        
+
         // 设置可用语音列表
         if (chineseVoices.length > 0) {
           setAvailableVoices(chineseVoices);
@@ -153,29 +153,40 @@ const ClassicDetail: React.FC = () => {
           setAvailableVoices(voices);
           console.log('未找到中文语音，使用所有可用语音');
         }
-        
+
         // 只有在初始化时（selectedVoice为空）才设置默认语音
-        if (!selectedVoice && chineseVoices.length > 0) {
-          // 使用排序后的第一个中文语音
-          setSelectedVoice(chineseVoices[0].name);
-          console.log('已选择默认中文语音:', chineseVoices[0].name);
-        } else if (!selectedVoice && voices.length > 0) {
+        if (chineseVoices.length > 0) {
+          // 尝试找到XiaoXiao语音
+          const xiaoxiaoVoice = chineseVoices.find(voice =>
+            /Microsoft.*Xiaoxiao.*Online.*Natural.*Chinese|Microsoft.*Xiaoxiao|Xiaoxiao/i.test(voice.name)
+          );
+
+          if (xiaoxiaoVoice) {
+            // 如果找到XiaoXiao语音，设置为默认语音
+            setSelectedVoice(xiaoxiaoVoice.name);
+            console.log('已选择XiaoXiao语音:', xiaoxiaoVoice.name);
+          } else {
+            // 如果没有找到XiaoXiao语音，使用排序后的第一个中文语音
+            setSelectedVoice(chineseVoices[0].name);
+            console.log('未找到XiaoXiao语音，使用默认中文语音:', chineseVoices[0].name);
+          }
+        } else if (voices.length > 0) {
           // 如果没有中文语音，则选择第一个可用语音
           setSelectedVoice(voices[0].name);
-          console.log('已选择默认语音:', voices[0].name);
+          console.log('未找到中文语音，使用默认语音:', voices[0].name);
         }
       };
-      
+
       // Chrome需要监听voiceschanged事件
       speechSynthesisRef.current.onvoiceschanged = loadVoices;
-      
+
       // 立即尝试加载一次
       loadVoices();
-      
+
       // 确保在Firefox和Safari等浏览器中也能加载语音
       setTimeout(loadVoices, 1000);
     }
-    
+
     return () => {
       // 组件卸载时停止朗读
       if (speechSynthesisRef.current && isSpeaking) {
@@ -198,7 +209,7 @@ const ClassicDetail: React.FC = () => {
         setLoading(false);
       }
     };
-  
+
     if (id) {
       fetchClassic();
     }
@@ -432,7 +443,7 @@ ${classic?.content}
           return acc;
         }, [])
         .filter(sentence => sentence.trim() !== '');
-      
+
       setSentences(sentenceArray);
       console.log('文本已分割成句子:', sentenceArray);
     }
@@ -441,7 +452,7 @@ ${classic?.content}
   // 朗读原文
   const handleSpeak = () => {
     if (!classic?.content || !speechSynthesisRef.current) return;
-    
+
     // 如果正在朗读，则停止
     if (isSpeaking) {
       speechSynthesisRef.current.cancel();
@@ -450,14 +461,14 @@ ${classic?.content}
       setCurrentSentenceIndex(-1); // 重置当前句子索引
       return;
     }
-    
+
     // 如果已暂停，则继续
     if (isPaused) {
       speechSynthesisRef.current.resume();
       setIsPaused(false);
       return;
     }
-    
+
     // 确保文本已被分割成句子
     let sentencesToUse = sentences;
     if (sentences.length === 0 && classic.content) {
@@ -472,20 +483,20 @@ ${classic?.content}
           return acc;
         }, [])
         .filter(sentence => sentence.trim() !== '');
-      
+
       setSentences(sentenceArray);
       sentencesToUse = sentenceArray;
       console.log('朗读前分割句子:', sentenceArray);
     }
-    
+
     // 创建新的语音实例
     const utterance = new SpeechSynthesisUtterance(classic.content);
-    
+
     // 设置语音参数
     utterance.lang = 'zh-CN'; // 设置语言为中文
     utterance.rate = speechRate; // 设置语速
     utterance.pitch = speechPitch; // 设置音调
-    
+
     // 设置选定的语音
     if (selectedVoice) {
       const voice = availableVoices.find(v => v.name === selectedVoice);
@@ -496,7 +507,7 @@ ${classic?.content}
         console.log('未找到选定的语音，使用默认语音');
       }
     }
-    
+
     // 设置事件监听
     utterance.onend = () => {
       console.log('朗读结束');
@@ -504,27 +515,27 @@ ${classic?.content}
       setIsPaused(false);
       setCurrentSentenceIndex(-1); // 重置当前句子索引
     };
-    
+
     utterance.onerror = (event) => {
       console.error('语音合成错误:', event);
       setIsSpeaking(false);
       setIsPaused(false);
       setCurrentSentenceIndex(-1); // 重置当前句子索引
     };
-    
+
     // 改进句子边界事件监听，修复高亮卡在第一句的问题
     utterance.onboundary = (event) => {
       if (event.name === 'sentence' || event.name === 'word') {
         console.log('边界事件:', event.name, event.charIndex, event.charLength);
-        
+
         // 确保有句子可以高亮
         if (sentencesToUse.length === 0) return;
-        
+
         // 修改计算逻辑，更准确地确定当前句子
         const charIndex = event.charIndex;
         let accumulatedLength = 0;
         let foundIndex = -1;
-        
+
         // 遍历句子数组，找到当前朗读位置对应的句子
         for (let i = 0; i < sentencesToUse.length; i++) {
           const sentenceLength = sentencesToUse[i].length;
@@ -535,7 +546,7 @@ ${classic?.content}
           }
           accumulatedLength += sentenceLength;
         }
-        
+
         // 如果找到了对应的句子索引，则更新高亮
         if (foundIndex !== -1) {
           // 强制更新当前句子索引，即使与之前相同
@@ -549,21 +560,21 @@ ${classic?.content}
         }
       }
     };
-    
+
     // 保存引用以便后续控制
     utteranceRef.current = utterance;
-    
+
     // 开始朗读
     speechSynthesisRef.current.speak(utterance);
     setIsSpeaking(true);
     setCurrentSentenceIndex(0); // 从第一句开始
     console.log('开始朗读，语速:', speechRate, '音调:', speechPitch);
   };
-  
+
   // 暂停/继续朗读
   const handlePauseResume = () => {
     if (!speechSynthesisRef.current || !isSpeaking) return;
-    
+
     if (isPaused) {
       speechSynthesisRef.current.resume();
       setIsPaused(false);
@@ -578,7 +589,7 @@ ${classic?.content}
     // 如果正在朗读，先停止
     if (isSpeaking && speechSynthesisRef.current) {
       speechSynthesisRef.current.cancel();
-      
+
       // 短暂延迟后再开始新的朗读，确保之前的朗读已完全停止
       setTimeout(() => {
         startReadingFromSentence(index);
@@ -588,24 +599,24 @@ ${classic?.content}
       startReadingFromSentence(index);
     }
   };
-  
+
   // 抽取出从指定句子开始朗读的逻辑到单独的函数
   const startReadingFromSentence = (index: number) => {
     // 确保有句子数组
     if (sentences.length === 0 || !classic?.content || !speechSynthesisRef.current) return;
-    
+
     // 获取从点击句子到结尾的所有内容
     const startIndex = sentences.slice(0, index).join('').length;
     const textToRead = classic.content.substring(startIndex);
-    
+
     // 创建新的语音实例
     const utterance = new SpeechSynthesisUtterance(textToRead);
-    
+
     // 设置语音参数
     utterance.lang = 'zh-CN';
     utterance.rate = speechRate;
     utterance.pitch = speechPitch;
-    
+
     // 设置选定的语音
     if (selectedVoice) {
       const voice = availableVoices.find(v => v.name === selectedVoice);
@@ -614,7 +625,7 @@ ${classic?.content}
         console.log('使用语音:', voice.name);
       }
     }
-    
+
     // 设置事件监听
     utterance.onend = () => {
       console.log('朗读结束');
@@ -622,32 +633,32 @@ ${classic?.content}
       setIsPaused(false);
       setCurrentSentenceIndex(-1);
     };
-    
+
     utterance.onerror = (event) => {
       console.error('语音合成错误:', event);
       setIsSpeaking(false);
       setIsPaused(false);
       setCurrentSentenceIndex(-1);
     };
-    
+
     // 改进句子边界事件监听，修复高亮问题
     utterance.onboundary = (event) => {
       if (event.name === 'sentence' || event.name === 'word') {
         console.log('边界事件:', event.name, event.charIndex, event.charLength);
-        
+
         // 修改计算逻辑，更准确地确定当前句子
         const charIndex = event.charIndex;
-        
+
         // 创建一个映射表，记录每个句子的起始位置
         const sentenceStartPositions: number[] = [];
         let position = 0;
-        
+
         // 计算每个句子的起始位置（相对于从index开始的文本）
         for (let i = index; i < sentences.length; i++) {
           sentenceStartPositions.push(position);
           position += sentences[i].length;
         }
-        
+
         // 找到当前朗读位置对应的句子
         let foundIndex = index; // 默认为起始句子
         for (let i = 0; i < sentenceStartPositions.length - 1; i++) {
@@ -656,12 +667,12 @@ ${classic?.content}
             break;
           }
         }
-        
+
         // 如果位置超过了最后一个记录的起始位置，则可能是最后一个句子
         if (charIndex >= sentenceStartPositions[sentenceStartPositions.length - 1]) {
           foundIndex = index + sentenceStartPositions.length - 1;
         }
-        
+
         // 使用函数式更新确保状态变化
         setCurrentSentenceIndex(prevIndex => {
           if (prevIndex !== foundIndex) {
@@ -672,13 +683,13 @@ ${classic?.content}
         });
       }
     };
-    
+
     // 保存引用以便后续控制
     utteranceRef.current = utterance;
-    
+
     // 开始朗读前先设置当前句子索引
     setCurrentSentenceIndex(index);
-    
+
     // 开始朗读
     speechSynthesisRef.current.speak(utterance);
     setIsSpeaking(true);
@@ -711,7 +722,7 @@ ${classic?.content}
           <span className="mr-4">朝代：{classic.dynasty}</span>
           <span>分类：{classic.category}</span>
         </div>
-        
+
         {/* 添加朗读控制按钮和语音设置 */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
@@ -721,9 +732,8 @@ ${classic?.content}
               <div className="flex items-center mr-2">
                 <button
                   onClick={() => setShowPinyin(!showPinyin)}
-                  className={`flex items-center justify-center p-2 ${
-                    showPinyin ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                  } rounded-md hover:bg-gray-300 transition-colors`}
+                  className={`flex items-center justify-center p-2 ${showPinyin ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
+                    } rounded-md hover:bg-gray-300 transition-colors`}
                   title={showPinyin ? "隐藏拼音" : "显示拼音"}
                 >
                   <span className="text-sm">拼音</span>
@@ -740,7 +750,7 @@ ${classic?.content}
                   </select>
                 )}
               </div>
-              
+
               <button
                 onClick={() => setShowSpeechSettings(!showSpeechSettings)}
                 className="flex items-center justify-center p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
@@ -758,15 +768,14 @@ ${classic?.content}
               >
                 {isSpeaking ? <BiVolumeMute className="w-5 h-5" /> : <BiVolumeFull className="w-5 h-5" />}
               </button>
-              
+
               {isSpeaking && (
                 <button
                   onClick={handlePauseResume}
-                  className={`flex items-center justify-center p-2 ${
-                    isPaused 
-                      ? 'bg-green-500 hover:bg-green-600' 
+                  className={`flex items-center justify-center p-2 ${isPaused
+                      ? 'bg-green-500 hover:bg-green-600'
                       : 'bg-gray-500 hover:bg-gray-600'
-                  } text-white rounded-md transition-colors`}
+                    } text-white rounded-md transition-colors`}
                   title={isPaused ? "继续朗读" : "暂停朗读"}
                 >
                   {isPaused ? <BiPlay className="w-5 h-5" /> : <BiPause className="w-5 h-5" />}
@@ -774,7 +783,7 @@ ${classic?.content}
               )}
             </div>
           </div>
-          
+
           {/* 语音设置面板 - 默认隐藏，点击设置按钮显示 */}
           {showSpeechSettings && (
             <div className="bg-[#f8f5f0] p-3 rounded-md mb-4 transition-all duration-300">
@@ -782,7 +791,7 @@ ${classic?.content}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-[#666] mb-1">选择语音</label>
-                  <select 
+                  <select
                     value={selectedVoice}
                     onChange={(e) => setSelectedVoice(e.target.value)}
                     className="w-full p-2 border border-[#e8e4e0] rounded bg-white"
@@ -794,27 +803,27 @@ ${classic?.content}
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm text-[#666] mb-1">语速: {speechRate.toFixed(1)}</label>
-                    <input 
-                      type="range" 
-                      min="0.1" 
-                      max="1.0" 
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="1.0"
                       step="0.1"
                       value={speechRate}
                       onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
                       className="w-full"
                     />
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-[#666] mb-1">音调: {speechPitch.toFixed(1)}</label>
-                    <input 
-                      type="range" 
-                      min="0.1" 
-                      max="2.0" 
+                    <input
+                      type="range"
+                      min="0.1"
+                      max="2.0"
                       step="0.1"
                       value={speechPitch}
                       onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
@@ -826,34 +835,33 @@ ${classic?.content}
             </div>
           )}
         </div>
-        
+
         {/* 修改原文显示部分，添加拼音标注 */}
         <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] prose-p:text-[#444]">
           {sentences.length > 0 ? (
             <div className="whitespace-pre-wrap">
               {sentences.map((sentence, index) => (
-                <span 
+                <span
                   key={index}
-                  className={`${
-                    currentSentenceIndex === index 
-                      ? 'bg-yellow-200 transition-colors duration-300' 
+                  className={`${currentSentenceIndex === index
+                      ? 'bg-yellow-200 transition-colors duration-300'
                       : 'hover:bg-gray-100 cursor-pointer'
-                  }`}
+                    }`}
                   onClick={() => handleSentenceClick(index)}
                   title="点击从此处开始朗读"
                   dangerouslySetInnerHTML={{
-                    __html: showPinyin 
-                      ? addPinyinAnnotation(sentence, { style: pinyinStyle }) 
+                    __html: showPinyin
+                      ? addPinyinAnnotation(sentence, { style: pinyinStyle })
                       : sentence
                   }}
                 />
               ))}
             </div>
           ) : (
-            <div 
+            <div
               dangerouslySetInnerHTML={{
-                __html: showPinyin 
-                  ? addPinyinAnnotation(classic.content, { style: pinyinStyle }) 
+                __html: showPinyin
+                  ? addPinyinAnnotation(classic.content, { style: pinyinStyle })
                   : classic.content
               }}
             />
@@ -957,8 +965,8 @@ ${classic?.content}
                       >
                         <div
                           className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
-                              ? 'bg-[#8b4513] text-white'
-                              : 'bg-[#f8f5f0] text-[#444]'
+                            ? 'bg-[#8b4513] text-white'
+                            : 'bg-[#f8f5f0] text-[#444]'
                             }`}
                         >
                           {message.role === 'assistant' ? (

@@ -2,7 +2,7 @@ import React from 'react';
 
 interface LoadingSpinnerProps {
     size?: 'small' | 'medium' | 'large';
-    color?: string;
+    color?: 'green' | 'white' | 'gray';
 }
 
 export default function LoadingSpinner({ size = 'medium', color = 'green' }: LoadingSpinnerProps) {
@@ -25,4 +25,4 @@ export default function LoadingSpinner({ size = 'medium', color = 'green' }: Loa
             />
         </div>
     );
-} 
+}

@@ -19,7 +19,7 @@ const Classics: React.FC = () => {
             setError(null);
             console.log('Fetching classics...');
             const skip = (page - 1) * itemsPerPage;
-            const response = await getClassics(skip, itemsPerPage);
+            const response = await getClassics({ skip, limit: itemsPerPage });
             setClassics(response.items);
             setTotalItems(response.total);
             setTotalPages(Math.ceil(response.total / itemsPerPage));
@@ -81,4 +81,4 @@ const Classics: React.FC = () => {
     );
 };
 
-export default Classics; 
+export default Classics;

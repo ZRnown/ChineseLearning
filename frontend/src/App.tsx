@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { BiHome, BiCog, BiBook, BiBookOpen, BiUser, BiGlobe } from 'react-icons/bi';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 
 import Home from './pages/Home';
 import Settings from './pages/Settings';
@@ -11,7 +9,6 @@ import Classics from './pages/Classics';
 import ClassicDetail from './pages/ClassicDetail';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import AIDuide from './components/AIDuide';
 import Translation from './pages/Translation';
 
 // 定义用户接口
@@ -22,16 +19,7 @@ interface User {
 
 // 只保留一个App组件
 const App: React.FC = () => {
-  const [text, setText] = useState('');
-  const [translatedText, setTranslatedText] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('zh');
-  const [showAIDuide, setShowAIDuide] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-
-  const handleTranslate = (translated: string) => {
-    setTranslatedText(translated);
-    setShowAIDuide(true);
-  };
 
   const handleLogin = (userData: User) => {
     setUser(userData);

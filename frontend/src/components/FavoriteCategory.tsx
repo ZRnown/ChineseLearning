@@ -1,5 +1,3 @@
-import React from 'react';
-
 interface Category {
     id: number;
     name: string;
@@ -47,4 +45,4 @@ export default function FavoriteCategory({
             </div>
         </div>
     );
-} 
+}

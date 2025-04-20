@@ -20,13 +20,14 @@ export default function InfiniteScroll<T>({
 }: InfiniteScrollProps<T>) {
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
-    const [isIntersecting, setIsIntersecting] = useState(false);
+    // 移除未使用的状态变量
+    // const [isIntersecting, setIsIntersecting] = useState(false);
 
     useEffect(() => {
         observerRef.current = new IntersectionObserver(
             (entries) => {
                 entries.forEach((entry) => {
-                    setIsIntersecting(entry.isIntersecting);
+                    // setIsIntersecting(entry.isIntersecting);
                     if (entry.isIntersecting && hasMore && !isLoading) {
                         onLoadMore();
                     }
@@ -62,4 +63,4 @@ export default function InfiniteScroll<T>({
             </div>
         </div>
     );
-} 
+}
