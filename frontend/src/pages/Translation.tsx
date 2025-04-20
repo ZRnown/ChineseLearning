@@ -202,12 +202,10 @@ ${text}
     return (
         <div className="container mx-auto px-4 py-8 max-w-4xl bg-[#f8f5f0]">
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h1 className="text-3xl font-bold mb-6">古文翻译</h1>
+                <h1 className="text-4xl font-bold mb-6 font-serif text-[#8b4513] text-center">古文翻译</h1>
+                <p className="text-center text-gray-600 mb-6">让古典文学焕发新生，让智慧跨越时空</p>
                 
                 <div className="mb-4">
-                    <label htmlFor="classic-content" className="block text-lg font-medium mb-2">
-                        输入古文内容
-                    </label>
                     <textarea
                         id="classic-content"
                         className="w-full p-4 border border-gray-300 rounded-lg mb-4 min-h-[120px]"
@@ -219,7 +217,7 @@ ${text}
             </div>
 
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold mb-4">选择翻译语言</h2>
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">选择翻译语言</h2>
                 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-6">
                     {languages.map((lang) => (
@@ -260,7 +258,7 @@ ${text}
 
             {/* 翻译结果区域 */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold mb-4">翻译结果</h2>
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">翻译结果</h2>
                 
                 {loading ? (
                     <div className="text-center py-8">
@@ -285,7 +283,7 @@ ${text}
             
             {/* AI导读区域 */}
             <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4">AI导读</h2>
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">AI导读</h2>
                 
                 {aiLoading ? (
                     <div className="text-center py-8">

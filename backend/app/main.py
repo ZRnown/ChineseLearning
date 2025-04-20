@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import auth, classics, translations, notes, chat
+from .routers import auth, classics, translations, notes, chat, pinyin  # 添加pinyin
 from .database import engine
 from . import models
 from .init_db import init_db
@@ -34,6 +34,7 @@ app.include_router(classics.router, prefix="/api/classics", tags=["classics"])
 app.include_router(translations.router, prefix="/api/translations", tags=["translations"])
 app.include_router(notes.router, prefix="/api/notes", tags=["notes"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
+app.include_router(pinyin.router, prefix="/api/pinyin", tags=["pinyin"])  # 添加拼音路由
 
 # 添加翻译路由
 from .routers.translations import translate_text

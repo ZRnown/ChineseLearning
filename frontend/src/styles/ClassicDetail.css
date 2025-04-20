@@ -37,4 +37,78 @@
 .content-text, .translation-text {
   line-height: 1.8;
   white-space: pre-wrap;
-} 
+}
+
+/* 拼音标注样式 */
+.pinyin-annotation {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  margin-right: 4px;
+  line-height: 1.5;
+  vertical-align: middle;
+  padding: 2px;
+  border-radius: 3px;
+}
+
+.pinyin-annotation .pinyin {
+  display: block;
+  font-size: 0.8em;
+  color: #666;
+  line-height: 1.2;
+  width: 100%;
+}
+
+.pinyin-annotation .hanzi {
+  display: block;
+  font-size: 1em;
+  line-height: 1.2;
+  width: 100%;
+}
+
+/* 拼音在上样式 */
+.pinyin-annotation .pinyin {
+  margin-bottom: 2px;
+}
+
+/* 内联样式 */
+.pinyin-annotation[data-pinyin]:not([data-pinyin=""]) .pinyin {
+  display: inline;
+  margin-left: 2px;
+  color: #888;
+}
+
+/* 朗读高亮时的拼音样式 */
+.bg-yellow-200,
+.sentence-highlight {
+  background-color: rgba(254, 240, 138, 0.7) !important;
+  border-radius: 3px;
+}
+
+.bg-yellow-200 .pinyin-annotation .pinyin,
+.pinyin-annotation.bg-yellow-200 .pinyin,
+.sentence-highlight .pinyin-annotation .pinyin {
+  color: #8b4513;
+  font-weight: 500;
+}
+
+/* 删除或注释掉下面的鼠标悬停效果 */
+/* 
+.pinyin-annotation:hover {
+  background-color: rgba(254, 240, 138, 0.5);
+}
+*/
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .pinyin-annotation {
+    margin-right: 1px;
+  }
+  
+  .pinyin-annotation .pinyin {
+    font-size: 0.7em;
+  }
+}
