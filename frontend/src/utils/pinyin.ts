@@ -9,12 +9,10 @@ import { pinyin } from 'pinyin-pro';
 export const addPinyinAnnotation = (text: string, options: {
   style?: 'above' | 'below' | 'inline';
   toneType?: 'symbol' | 'num' | 'none';
-  separator?: string;
 } = {}): string => {
   const {
     style = 'above',
-    toneType = 'symbol',
-    separator = ' '
+    toneType = 'symbol'
   } = options;
 
   // 使用pinyin-pro库获取拼音
@@ -25,17 +23,17 @@ export const addPinyinAnnotation = (text: string, options: {
 
   // 将拼音结果转换为HTML
   let result = '';
-  
+
   for (let i = 0; i < text.length; i++) {
     const char = text[i];
     const py = pinyinResult[i] || '';
-    
+
     // 如果是标点符号或空格，不添加拼音标注
     if (/[\p{P}\s]/u.test(char)) {
       result += `<span class="punctuation">${char}</span>`;
       continue;
     }
-    
+
     // 根据样式生成不同的HTML
     if (style === 'above') {
       // 拼音在上，汉字在下
@@ -56,7 +54,7 @@ export const addPinyinAnnotation = (text: string, options: {
       </span>`;
     }
   }
-  
+
   return result;
 };
 
@@ -69,7 +67,7 @@ export const toPinyin = (text: string): string => {
   return pinyin(text, {
     toneType: 'none',
     type: 'string'
-  });
+  }) as string;
 };
 
 /**
@@ -81,5 +79,5 @@ export const toPinyinWithTone = (text: string): string => {
   return pinyin(text, {
     toneType: 'symbol',
     type: 'string'
-  });
+  }) as string;
 };

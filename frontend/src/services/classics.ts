@@ -1,6 +1,5 @@
 import api from '../utils/axios';
 import { Classic, Translation } from '../types/classic';
-import { API_URL } from '../utils/api';
 
 interface GetClassicsParams {
     skip?: number;
@@ -78,28 +77,28 @@ export const likeClassic = async (id: string): Promise<void> => {
 
 
 export interface SearchClassicsParams {
-  query: string;
-  searchType?: 'title' | 'content' | 'author' | 'all';
+    query: string;
+    searchType?: 'title' | 'content' | 'author' | 'all';
 }
 
 export const searchClassics = async (params: SearchClassicsParams) => {
-  try {
-    console.log('搜索参数:', params);
-    
-    // 改用POST请求，将参数放在请求体中
-    const response = await api.post('/classics/search', {
-      query: params.query,
-      search_type: params.searchType || 'all'
-    });
-    
-    console.log('搜索响应:', response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error('搜索古籍出错:', error);
-    if (error.response) {
-      console.error('错误响应数据:', error.response.data);
-      console.error('错误状态码:', error.response.status);
+    try {
+        console.log('搜索参数:', params);
+
+        // 改用POST请求，将参数放在请求体中
+        const response = await api.post('/classics/search', {
+            query: params.query,
+            search_type: params.searchType || 'all'
+        });
+
+        console.log('搜索响应:', response.data);
+        return response.data;
+    } catch (error: any) {
+        console.error('搜索古籍出错:', error);
+        if (error.response) {
+            console.error('错误响应数据:', error.response.data);
+            console.error('错误状态码:', error.response.status);
+        }
+        throw error;
     }
-    throw error;
-  }
 };

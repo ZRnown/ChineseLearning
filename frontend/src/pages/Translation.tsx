@@ -1,19 +1,22 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { BiArrowBack } from 'react-icons/bi';
+// 移除未使用的导入
+// import { Link } from 'react-router-dom';
+// import { BiArrowBack } from 'react-icons/bi';
 import { FaGlobe, FaRobot } from 'react-icons/fa';
 
 const Translation: React.FC = () => {
     const [text, setText] = useState('');
     const [selectedLanguage, setSelectedLanguage] = useState('中文');
-    const [selectedLanguageCode, setSelectedLanguageCode] = useState('zh');
+    // selectedLanguageCode实际上在handleLanguageSelect中被使用，但在翻译API调用中没有使用
+    // 修改为使用selectedLanguage而不是selectedLanguageCode
+    // const [selectedLanguageCode, setSelectedLanguageCode] = useState('zh');
     const [translatedText, setTranslatedText] = useState('');
-    const [aiGuideText, setAiGuideText] = useState(''); 
+    const [aiGuideText, setAiGuideText] = useState('');
     const [loading, setLoading] = useState(false);
-    const [aiLoading, setAiLoading] = useState(false); 
+    const [aiLoading, setAiLoading] = useState(false);
     const [error, setError] = useState('');
-    const [aiError, setAiError] = useState(''); 
-    
+    const [aiError, setAiError] = useState('');
+
     // 语言选项
     const languages = [
         { name: '中文', code: 'zh' },
@@ -59,7 +62,8 @@ const Translation: React.FC = () => {
     // 选择语言时同时更新语言代码
     const handleLanguageSelect = (lang: { name: string, code: string }) => {
         setSelectedLanguage(lang.name);
-        setSelectedLanguageCode(lang.code);
+        // 移除对setSelectedLanguageCode的调用，因为我们已经移除了该状态变量
+        // setSelectedLanguageCode(lang.code);
     };
 
     // 翻译功能
@@ -68,12 +72,12 @@ const Translation: React.FC = () => {
             setTranslatedText('请提供需要翻译的古文。我没有收到任何需要翻译的文本。');
             return;
         }
-        
+
         try {
             setLoading(true);
             setError('');
             setTranslatedText('');
-            
+
             const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
                 method: 'POST',
                 headers: {
@@ -106,7 +110,7 @@ ${text}
 
             const data = await response.json();
             console.log("翻译API响应:", data); // 调试用
-            
+
             if (data.candidates && data.candidates[0] && data.candidates[0].content) {
                 setTranslatedText(data.candidates[0].content.parts[0].text);
             } else {
@@ -125,14 +129,14 @@ ${text}
         if (!text.trim()) {
             return;
         }
-        
+
         try {
             setAiLoading(true);
             setAiError('');
-            
+
             // 根据选择的语言调整提示词
             let promptText = '';
-            
+
             if (selectedLanguage === '中文') {
                 promptText = `请对以下古文进行导读分析：\n\n${text}\n\n请从以下几个方面进行分析：
 1. 作品背景与作者简介
@@ -152,9 +156,9 @@ ${text}
                     '한국어': 'Korean',
                     // 其他语言可以根据需要添加
                 };
-                
+
                 const targetLanguage = languageMap[selectedLanguage] || 'English';
-                
+
                 promptText = `Please analyze the following ancient Chinese text in ${targetLanguage}:\n\n${text}\n\nPlease analyze from the following aspects:
 1. Background of the work and author introduction
 2. Text interpretation and translation
@@ -162,7 +166,7 @@ ${text}
 4. Ideological connotation discussion
 5. Historical and cultural value`;
             }
-            
+
             const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
                 method: 'POST',
                 headers: {
@@ -204,7 +208,7 @@ ${text}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h1 className="text-4xl font-bold mb-6 font-serif text-[#8b4513] text-center">古文翻译</h1>
                 <p className="text-center text-gray-600 mb-6">让古典文学焕发新生，让智慧跨越时空</p>
-                
+
                 <div className="mb-4">
                     <textarea
                         id="classic-content"
@@ -218,23 +222,22 @@ ${text}
 
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">选择翻译语言</h2>
-                
+
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-6">
                     {languages.map((lang) => (
                         <button
                             key={lang.code}
-                            className={`p-2 rounded-md text-center transition-colors ${
-                                selectedLanguage === lang.name
-                                    ? 'bg-[#8b4513] text-white'
-                                    : 'bg-gray-100 hover:bg-gray-200'
-                            }`}
+                            className={`p-2 rounded-md text-center transition-colors ${selectedLanguage === lang.name
+                                ? 'bg-[#8b4513] text-white'
+                                : 'bg-gray-100 hover:bg-gray-200'
+                                }`}
                             onClick={() => handleLanguageSelect(lang)}
                         >
                             {lang.name}
                         </button>
                     ))}
                 </div>
-                
+
                 <div className="flex space-x-4">
                     <button
                         onClick={handleTranslate}
@@ -244,7 +247,7 @@ ${text}
                         <FaGlobe className="mr-2" />
                         翻译
                     </button>
-                    
+
                     <button
                         onClick={handleAIGuide}
                         className="flex items-center justify-center px-6 py-3 bg-[#4b5563] text-white rounded-md hover:bg-[#374151] transition-colors"
@@ -259,7 +262,7 @@ ${text}
             {/* 翻译结果区域 */}
             <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">翻译结果</h2>
-                
+
                 {loading ? (
                     <div className="text-center py-8">
                         <p className="text-xl mb-4">正在翻译中...</p>
@@ -280,11 +283,11 @@ ${text}
                     </div>
                 )}
             </div>
-            
+
             {/* AI导读区域 */}
             <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">AI导读</h2>
-                
+
                 {aiLoading ? (
                     <div className="text-center py-8">
                         <p className="text-xl mb-4">正在生成AI导读...</p>

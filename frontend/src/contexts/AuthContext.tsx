@@ -10,6 +10,7 @@ interface User {
 
 interface AuthContextType {
     user: User | null;
+    loading: boolean;
     login: (username: string, password: string) => Promise<void>;
     register: (username: string, password: string, email: string) => Promise<void>;
     logout: () => void;
@@ -27,15 +28,19 @@ export const useAuth = () => {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
 
     useEffect(() => {
         const token = localStorage.getItem('token');
         if (token) {
             validateToken(token);
+        } else {
+            setLoading(false);
         }
     }, []);
 
     const validateToken = async (token: string) => {
+        setLoading(true);
         try {
             const response = await axios.get('http://localhost:8000/api/auth/me', {
                 headers: { Authorization: `Bearer ${token}` }
@@ -44,6 +49,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (error) {
             localStorage.removeItem('token');
             setUser(null);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -75,8 +82,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, register, logout }}>
+        <AuthContext.Provider value={{ user, loading, login, register, logout }}>
             {children}
         </AuthContext.Provider>
     );
-}; 
+};

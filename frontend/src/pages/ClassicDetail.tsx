@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { getClassicById } from '../services/classics';
 import { Classic } from '../types/classic';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { BiTime, BiHeart, BiChat, BiVolumeFull, BiVolumeMute, BiPause, BiPlay } from 'react-icons/bi';
+import { BiVolumeFull, BiVolumeMute, BiPause, BiPlay } from 'react-icons/bi';
 import '../styles/ClassicDetail.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -64,6 +64,7 @@ const ClassicDetail: React.FC = () => {
   const [translatedText, setTranslatedText] = useState('');
   const [aiGuide, setAiGuide] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('zh');
+  // 添加这些状态变量，因为它们在代码中被使用
   const [showTranslation, setShowTranslation] = useState(false);
   const [showAiGuide, setShowAiGuide] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
@@ -773,8 +774,8 @@ ${classic?.content}
                 <button
                   onClick={handlePauseResume}
                   className={`flex items-center justify-center p-2 ${isPaused
-                      ? 'bg-green-500 hover:bg-green-600'
-                      : 'bg-gray-500 hover:bg-gray-600'
+                    ? 'bg-green-500 hover:bg-green-600'
+                    : 'bg-gray-500 hover:bg-gray-600'
                     } text-white rounded-md transition-colors`}
                   title={isPaused ? "继续朗读" : "暂停朗读"}
                 >
@@ -844,8 +845,8 @@ ${classic?.content}
                 <span
                   key={index}
                   className={`${currentSentenceIndex === index
-                      ? 'bg-yellow-200 transition-colors duration-300'
-                      : 'hover:bg-gray-100 cursor-pointer'
+                    ? 'bg-yellow-200 transition-colors duration-300'
+                    : 'hover:bg-gray-100 cursor-pointer'
                     }`}
                   onClick={() => handleSentenceClick(index)}
                   title="点击从此处开始朗读"

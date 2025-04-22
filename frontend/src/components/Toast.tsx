@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { CheckCircleIcon, XCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 
 interface ToastProps {
@@ -34,4 +34,4 @@ export default function Toast({ message, type, onClose, duration = 3000 }: Toast
             <p className="text-sm font-medium">{message}</p>
         </div>
     );
-} 
+}

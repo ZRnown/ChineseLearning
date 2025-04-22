@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import LoadingSpinner from './LoadingSpinner';
 
 interface LazyImageProps {
@@ -71,4 +71,4 @@ export default function LazyImage({ src, alt, className = '' }: LazyImageProps) 
             />
         </div>
     );
-} 
+}

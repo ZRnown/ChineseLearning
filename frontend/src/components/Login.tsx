@@ -1,39 +1,71 @@
-const handleLogin = async (values: LoginFormValues) => {
-  try {
-    const formData = new FormData();
-    formData.append('username', values.username);
-    formData.append('password', values.password);
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
-    const response = await fetch('/api/auth/token', {
-      method: 'POST',
-      body: formData,
-    });
+interface LoginFormValues {
+  username: string;
+  password: string;
+}
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Login failed:', errorData.detail);
-      // 显示错误消息
-      setError(errorData.detail);
-      return;
+const LoginComponent: React.FC = () => {
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+  const { login: authLogin } = useAuth();
+
+  const handleLogin = async (values: LoginFormValues) => {
+    try {
+      const formData = new FormData();
+      formData.append('username', values.username);
+      formData.append('password', values.password);
+
+      const response = await fetch('/api/auth/token', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Login failed:', errorData.detail);
+        setError(errorData.detail);
+        return;
+      }
+
+      const data = await response.json();
+
+      localStorage.setItem('token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+
+      await authLogin(values.username, values.password);
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('登录过程中发生错误，请重试');
     }
+  };
 
-    const data = await response.json();
-    
-    // 保存 token
-    localStorage.setItem('token', data.access_token);
-    
-    // 保存用户信息
-    localStorage.setItem('user', JSON.stringify(data.user));
-    
-    // 更新全局用户状态
-    setUser(data.user);  // 假设你使用了某种状态管理
-    
-    // 重定向到主页
-    navigate('/');  // 使用 react-router-dom 的 navigate
-    
-    console.log('Login successful:', data);
-  } catch (error) {
-    console.error('Login error:', error);
-    setError('Login failed. Please try again.');
-  }
-}; 
+  return (
+    <div className="login-container">
+      {error && <div className="error-message">{error}</div>}
+      <form onSubmit={(e) => {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        handleLogin({
+          username: formData.get('username') as string,
+          password: formData.get('password') as string
+        });
+      }}>
+        <div className="form-group">
+          <label htmlFor="username">用户名</label>
+          <input type="text" id="username" name="username" required />
+        </div>
+        <div className="form-group">
+          <label htmlFor="password">密码</label>
+          <input type="password" id="password" name="password" required />
+        </div>
+        <button type="submit">登录</button>
+      </form>
+    </div>
+  );
+};
+
+export default LoginComponent;
