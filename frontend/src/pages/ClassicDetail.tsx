@@ -64,9 +64,6 @@ const ClassicDetail: React.FC = () => {
   const [translatedText, setTranslatedText] = useState('');
   const [aiGuide, setAiGuide] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('zh');
-  // 添加这些状态变量，因为它们在代码中被使用
-  const [showTranslation, setShowTranslation] = useState(false);
-  const [showAiGuide, setShowAiGuide] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
@@ -261,7 +258,6 @@ ${classic?.content}
       const data = await response.json();
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         setTranslatedText(data.candidates[0].content.parts[0].text);
-        setShowTranslation(true);
       } else {
         throw new Error('API响应格式不正确');
       }
@@ -311,7 +307,6 @@ ${classic?.content}
       const data = await response.json();
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         setAiGuide(data.candidates[0].content.parts[0].text);
-        setShowAiGuide(true);
       } else {
         throw new Error('API响应格式不正确');
       }
