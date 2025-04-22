@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-// 移除未使用的导入
-// import { Link } from 'react-router-dom';
-// import { BiArrowBack } from 'react-icons/bi';
+// 添加react-markdown导入
+import ReactMarkdown from 'react-markdown';
 import { FaGlobe, FaRobot } from 'react-icons/fa';
 
 const Translation: React.FC = () => {
@@ -138,12 +137,14 @@ ${text}
             let promptText = '';
 
             if (selectedLanguage === '中文') {
-                promptText = `请对以下古文进行导读分析：\n\n${text}\n\n请从以下几个方面进行分析：
+                promptText = `请对以下古文进行导读分析，并使用Markdown格式输出结果：\n\n${text}\n\n请从以下几个方面进行分析：
 1. 作品背景与作者简介
 2. 文本解读与翻译
 3. 文学手法分析
 4. 思想内涵探讨
-5. 历史文化价值`;
+5. 历史文化价值
+
+请使用Markdown格式进行排版，包括标题、列表、引用等，以提高可读性。`;
             } else {
                 // 为其他语言准备相应的提示词
                 const languageMap: Record<string, string> = {
@@ -159,12 +160,14 @@ ${text}
 
                 const targetLanguage = languageMap[selectedLanguage] || 'English';
 
-                promptText = `Please analyze the following ancient Chinese text in ${targetLanguage}:\n\n${text}\n\nPlease analyze from the following aspects:
+                promptText = `Please analyze the following ancient Chinese text in ${targetLanguage} and format your response using Markdown:\n\n${text}\n\nPlease analyze from the following aspects:
 1. Background of the work and author introduction
 2. Text interpretation and translation
 3. Literary technique analysis
 4. Ideological connotation discussion
-5. Historical and cultural value`;
+5. Historical and cultural value
+
+Please use Markdown formatting including headings, lists, quotes, etc. to improve readability.`;
             }
 
             const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
@@ -241,20 +244,48 @@ ${text}
                 <div className="flex space-x-4">
                     <button
                         onClick={handleTranslate}
-                        className="flex items-center justify-center px-6 py-3 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors"
-                        disabled={loading}
+                        className={`flex items-center justify-center px-6 py-3 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors ${
+                            loading ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                        disabled={loading || aiLoading}
                     >
-                        <FaGlobe className="mr-2" />
-                        翻译
+                        {loading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                翻译中...
+                            </>
+                        ) : (
+                            <>
+                                <FaGlobe className="mr-2" />
+                                翻译
+                            </>
+                        )}
                     </button>
 
                     <button
                         onClick={handleAIGuide}
-                        className="flex items-center justify-center px-6 py-3 bg-[#4b5563] text-white rounded-md hover:bg-[#374151] transition-colors"
-                        disabled={loading}
+                        className={`flex items-center justify-center px-6 py-3 bg-[#4b5563] text-white rounded-md hover:bg-[#374151] transition-colors ${
+                            aiLoading ? 'opacity-70 cursor-not-allowed' : ''
+                        }`}
+                        disabled={loading || aiLoading}
                     >
-                        <FaRobot className="mr-2" />
-                        AI导读
+                        {aiLoading ? (
+                            <>
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                分析中...
+                            </>
+                        ) : (
+                            <>
+                                <FaRobot className="mr-2" />
+                                AI导读
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -284,7 +315,7 @@ ${text}
                 )}
             </div>
 
-            {/* AI导读区域 */}
+            {/* AI导读区域 - 修改为支持Markdown */}
             <div className="bg-white rounded-lg shadow-lg p-6">
                 <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">AI导读</h2>
 
@@ -303,8 +334,8 @@ ${text}
                         <p className="text-gray-500">让AI为你解读文字背后的深意</p>
                     </div>
                 ) : aiGuideText ? (
-                    <div className="prose max-w-none">
-                        {aiGuideText}
+                    <div className="prose prose-stone max-w-none overflow-auto">
+                        <ReactMarkdown>{aiGuideText}</ReactMarkdown>
                     </div>
                 ) : (
                     <div className="text-center py-8">

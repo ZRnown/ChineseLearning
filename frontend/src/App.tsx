@@ -90,8 +90,8 @@ const App: React.FC = () => {
           </div>
         </nav>
 
-        {/* 主要内容区域 */}
-        <main className="flex-grow w-[65%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* 主要内容区域 - 修改宽度设置 */}
+        <main className="flex-grow w-[80%] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/classics" element={<Classics />} />

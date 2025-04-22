@@ -121,3 +121,23 @@ select {
 .prose pre {
     @apply bg-gray-100 dark:bg-gray-800 rounded-lg p-4;
 }
+
+
+/* 翻译页面专用样式 */
+.translation-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 90%;
+}
+
+.translation-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .translation-content {
+    grid-template-columns: 1fr;
+  }
+}
