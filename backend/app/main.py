@@ -22,7 +22,16 @@ app = FastAPI(
 # 配置 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174", "http://127.0.0.1:5173", "http://127.0.0.1:5174"],
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5174",
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:5174",
+        "http://www.aihanxue.xyz",
+        "https://www.aihanxue.xyz",
+        "http://115.29.225.131",
+        "https://115.29.225.131",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -31,14 +40,18 @@ app.add_middleware(
 # 注册路由
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(classics.router, prefix="/api/classics", tags=["classics"])
-app.include_router(translations.router, prefix="/api/translations", tags=["translations"])
+app.include_router(
+    translations.router, prefix="/api/translations", tags=["translations"]
+)
 app.include_router(notes.router, prefix="/api/notes", tags=["notes"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(pinyin.router, prefix="/api/pinyin", tags=["pinyin"])  # 添加拼音路由
 
 # 添加翻译路由
 from .routers.translations import translate_text
+
 app.post("/api/translate")(translate_text)
+
 
 # 添加测试路由
 class TestChatRequest(BaseModel):
@@ -46,10 +59,14 @@ class TestChatRequest(BaseModel):
     classic_id: int
     classic_title: str
 
+
 @app.post("/api/chat_test")
 async def chat_test(request: TestChatRequest):
     """测试聊天API是否可访问"""
-    return {"response": f"收到消息：{request.message}，古籍ID：{request.classic_id}，标题：{request.classic_title}"}
+    return {
+        "response": f"收到消息：{request.message}，古籍ID：{request.classic_id}，标题：{request.classic_title}"
+    }
+
 
 @app.get("/")
 async def root():
