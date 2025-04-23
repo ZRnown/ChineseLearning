@@ -1,0 +1,129 @@
+.character-explanation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.character-explanation-content {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close-button {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0.5rem;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.close-button:hover {
+    color: #333;
+}
+
+.character-info {
+    font-family: "Noto Serif SC", serif;
+}
+
+.character-info h2 {
+    font-size: 3rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.info-row {
+    display: flex;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+}
+
+.info-row .label {
+    font-weight: 600;
+    color: #8b4513;
+    min-width: 80px;
+    margin-right: 1rem;
+}
+
+.info-row span:not(.label) {
+    color: #2c3e50;
+}
+
+.explanation {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background-color: #fff9f0;
+    border-radius: 8px;
+    border-left: 4px solid #8b4513;
+}
+
+.explanation h3 {
+    color: #8b4513;
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.explanation p {
+    color: #2c3e50;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    font-size: 1rem;
+}
+
+.loading {
+    text-align: center;
+    padding: 2rem;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.error {
+    text-align: center;
+    padding: 2rem;
+    color: #dc3545;
+    font-size: 1.1rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 640px) {
+    .character-explanation-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .character-info h2 {
+        font-size: 2.5rem;
+    }
+
+    .info-row {
+        flex-direction: column;
+    }
+
+    .info-row .label {
+        margin-bottom: 0.5rem;
+    }
+}

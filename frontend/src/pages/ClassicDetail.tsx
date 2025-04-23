@@ -8,6 +8,7 @@ import '../styles/ClassicDetail.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { addPinyinAnnotation } from '../utils/pinyin';
+import CharacterExplanation from '../components/CharacterExplanation';
 
 interface Comment {
   id: string;
@@ -95,7 +96,15 @@ const ClassicDetail: React.FC = () => {
 
   // 添加拼音标注相关状态
   const [showPinyin, setShowPinyin] = useState(false);
-  const [pinyinStyle, setPinyinStyle] = useState<'above' | 'below' | 'inline'>('above');
+  const [pinyinStyle] = useState<'above' | 'below' | 'inline'>('above');
+
+  // 添加选中字的功能和释义显示
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+
+  // 添加朗读和释义模式的状态
+  const [isReadingMode, setIsReadingMode] = useState(false);
+  const [isExplanationMode, setIsExplanationMode] = useState(false);
 
   // 初始化语音合成和获取可用语音
   useEffect(() => {
@@ -580,8 +589,76 @@ ${classic?.content}
     }
   };
 
-  // 添加新的函数：点击句子开始朗读
+  // 处理字符点击
+  const handleCharacterClick = (char: string) => {
+    setSelectedCharacter(char);
+    setShowExplanation(true);
+  };
+
+  // 渲染带有可点击字符的文本
+  const renderClickableText = (text: string) => {
+    if (showPinyin) {
+      const annotatedText = addPinyinAnnotation(text, { style: pinyinStyle });
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = annotatedText;
+
+      const processNode = (node: Node): React.ReactNode => {
+        if (node.nodeType === Node.TEXT_NODE) {
+          const text = node.textContent || '';
+          if (!text.trim()) return null; // 忽略纯空白文本节点
+          return text;
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          const element = node as Element;
+          if (element.classList.contains('pinyin-annotation')) {
+            const pinyin = element.querySelector('.pinyin')?.textContent || '';
+            const hanzi = element.querySelector('.hanzi')?.textContent || '';
+            return (
+              <ruby
+                className={`pinyin-ruby ${isExplanationMode ? 'clickable-character' : ''}`}
+                onClick={() => {
+                  if (isExplanationMode && hanzi) {
+                    handleCharacterClick(hanzi);
+                  }
+                }}
+                title={isExplanationMode ? "点击查看释义" : ""}
+              >
+                {hanzi}
+                <rt>{pinyin}</rt>
+              </ruby>
+            );
+          }
+          const children = Array.from(element.childNodes)
+            .map(child => processNode(child))
+            .filter(Boolean); // 过滤掉null值
+          if (children.length === 0) return null;
+          return <span key={Math.random()}>{children}</span>;
+        }
+        return null;
+      };
+
+      return processNode(tempDiv);
+    } else {
+      return text.split('').map((char, index) => (
+        <span
+          key={index}
+          className={isExplanationMode ? 'clickable-character' : ''}
+          onClick={() => {
+            if (isExplanationMode) {
+              handleCharacterClick(char);
+            }
+          }}
+          title={isExplanationMode ? "点击查看释义" : ""}
+        >
+          {char}
+        </span>
+      ));
+    }
+  };
+
+  // 修改句子点击处理函数
   const handleSentenceClick = (index: number) => {
+    if (!isReadingMode) return; // 只有在朗读模式下才能点击朗读
+
     // 如果正在朗读，先停止
     if (isSpeaking && speechSynthesisRef.current) {
       speechSynthesisRef.current.cancel();
@@ -719,63 +796,75 @@ ${classic?.content}
           <span>分类：{classic.category}</span>
         </div>
 
-        {/* 添加朗读控制按钮和语音设置 */}
+        {/* 修改功能按钮区域 */}
         <div className="mb-4">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-2xl font-bold font-serif text-[#2c3e50]">原文</h2>
             <div className="flex space-x-2">
-              {/* 添加拼音标注控制按钮 */}
-              <div className="flex items-center mr-2">
-                <button
-                  onClick={() => setShowPinyin(!showPinyin)}
-                  className={`flex items-center justify-center p-2 ${showPinyin ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                    } rounded-md hover:bg-gray-300 transition-colors`}
-                  title={showPinyin ? "隐藏拼音" : "显示拼音"}
-                >
-                  <span className="text-sm">拼音</span>
-                </button>
-                {showPinyin && (
-                  <select
-                    value={pinyinStyle}
-                    onChange={(e) => setPinyinStyle(e.target.value as 'above' | 'below' | 'inline')}
-                    className="ml-2 p-1 border border-gray-300 rounded text-sm"
+              {/* 拼音按钮 */}
+              <button
+                onClick={() => setShowPinyin(!showPinyin)}
+                className={`flex items-center justify-center p-2 ${showPinyin ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
+                  } rounded-md hover:bg-gray-300 transition-colors`}
+                title={showPinyin ? "隐藏拼音" : "显示拼音"}
+              >
+                <span className="text-sm">拼音</span>
+              </button>
+
+              {/* 释义按钮 */}
+              <button
+                onClick={() => setIsExplanationMode(!isExplanationMode)}
+                className={`flex items-center justify-center p-2 ${isExplanationMode ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
+                  } rounded-md hover:bg-gray-300 transition-colors`}
+                title={isExplanationMode ? "退出释义模式" : "进入释义模式"}
+              >
+                <span className="text-sm">释义</span>
+              </button>
+
+              {/* 朗读按钮 */}
+              <button
+                onClick={() => setIsReadingMode(!isReadingMode)}
+                className={`flex items-center justify-center p-2 ${isReadingMode ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
+                  } rounded-md hover:bg-gray-300 transition-colors`}
+                title={isReadingMode ? "退出朗读模式" : "进入朗读模式"}
+              >
+                <span className="text-sm">朗读</span>
+              </button>
+
+              {/* 朗读设置和朗读控制按钮 - 只在朗读模式下显示 */}
+              {isReadingMode && (
+                <>
+                  <button
+                    onClick={() => setShowSpeechSettings(!showSpeechSettings)}
+                    className="flex items-center justify-center p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+                    title="朗读设置"
                   >
-                    <option value="above">拼音在上</option>
-                    <option value="below">拼音在下</option>
-                    <option value="inline">拼音内联</option>
-                  </select>
-                )}
-              </div>
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
 
-              <button
-                onClick={() => setShowSpeechSettings(!showSpeechSettings)}
-                className="flex items-center justify-center p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                title="朗读设置"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </button>
-              <button
-                onClick={handleSpeak}
-                className="flex items-center justify-center p-2 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors"
-                title={isSpeaking ? "停止朗读" : "朗读原文"}
-              >
-                {isSpeaking ? <BiVolumeMute className="w-5 h-5" /> : <BiVolumeFull className="w-5 h-5" />}
-              </button>
+                  <button
+                    onClick={handleSpeak}
+                    className={`flex items-center justify-center p-2 ${isSpeaking ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
+                      } rounded-md hover:bg-gray-300 transition-colors`}
+                    title={isSpeaking ? "停止朗读" : "朗读原文"}
+                  >
+                    {isSpeaking ? <BiVolumeMute className="w-5 h-5" /> : <BiVolumeFull className="w-5 h-5" />}
+                  </button>
 
-              {isSpeaking && (
-                <button
-                  onClick={handlePauseResume}
-                  className={`flex items-center justify-center p-2 ${isPaused
-                    ? 'bg-green-500 hover:bg-green-600'
-                    : 'bg-gray-500 hover:bg-gray-600'
-                    } text-white rounded-md transition-colors`}
-                  title={isPaused ? "继续朗读" : "暂停朗读"}
-                >
-                  {isPaused ? <BiPlay className="w-5 h-5" /> : <BiPause className="w-5 h-5" />}
-                </button>
+                  {isSpeaking && (
+                    <button
+                      onClick={handlePauseResume}
+                      className={`flex items-center justify-center p-2 ${isPaused ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'
+                        } text-white rounded-md transition-colors`}
+                      title={isPaused ? "继续朗读" : "暂停朗读"}
+                    >
+                      {isPaused ? <BiPlay className="w-5 h-5" /> : <BiPause className="w-5 h-5" />}
+                    </button>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -839,28 +928,19 @@ ${classic?.content}
               {sentences.map((sentence, index) => (
                 <span
                   key={index}
-                  className={`${currentSentenceIndex === index
-                    ? 'bg-yellow-200 transition-colors duration-300'
-                    : 'hover:bg-gray-100 cursor-pointer'
+                  className={`sentence-container ${currentSentenceIndex === index ? 'current-reading' : ''} ${isReadingMode ? 'readable-sentence' : ''
                     }`}
                   onClick={() => handleSentenceClick(index)}
-                  title="点击从此处开始朗读"
-                  dangerouslySetInnerHTML={{
-                    __html: showPinyin
-                      ? addPinyinAnnotation(sentence, { style: pinyinStyle })
-                      : sentence
-                  }}
-                />
+                  title={isReadingMode ? "点击从此处开始朗读" : ""}
+                >
+                  {renderClickableText(sentence)}
+                </span>
               ))}
             </div>
           ) : (
-            <div
-              dangerouslySetInnerHTML={{
-                __html: showPinyin
-                  ? addPinyinAnnotation(classic.content, { style: pinyinStyle })
-                  : classic.content
-              }}
-            />
+            <div className="classic-content">
+              {renderClickableText(classic.content)}
+            </div>
           )}
         </div>
       </div>
@@ -1038,6 +1118,13 @@ ${classic?.content}
           ))}
         </div>
       </div>
+
+      {showExplanation && selectedCharacter && (
+        <CharacterExplanation
+          character={selectedCharacter}
+          onClose={() => setShowExplanation(false)}
+        />
+      )}
     </div>
   );
 };
