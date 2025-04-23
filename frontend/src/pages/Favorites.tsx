@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import FavoriteButton from '../components/FavoriteButton';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Classic {
     id: number;
@@ -10,28 +11,31 @@ interface Classic {
     category: string;
     description: string;
     cover_image?: string;
-    is_favorite: boolean;
+    is_favorite?: boolean;
 }
 
 export default function Favorites() {
-    const [favorites, setFavorites] = useState<Classic[]>([]);
+    const { user, favorites, toggleFavorite, getFavorites, loading: authLoading } = useAuth();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetchFavorites();
-    }, []);
+        // 只有当AuthContext加载完成后再判断用户状态
+        if (!authLoading) {
+            if (!user) {
+                // 如果未登录，重定向到登录页面
+                navigate('/login');
+                return;
+            }
+            fetchFavorites();
+        }
+    }, [user, navigate, authLoading]);
 
     const fetchFavorites = async () => {
         try {
-            const response = await fetch('http://localhost:8000/api/favorites', {
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('获取收藏列表失败');
-            }
-            const data = await response.json();
-            setFavorites(data);
+            setLoading(true);
+            await getFavorites();
         } catch (err) {
             setError(err instanceof Error ? err.message : '获取收藏列表失败');
         } finally {
@@ -39,23 +43,16 @@ export default function Favorites() {
         }
     };
 
-    const toggleFavorite = async (classicId: number) => {
+    const handleToggleFavorite = async (classic: Classic) => {
         try {
-            const response = await fetch(`http://localhost:8000/api/classics/${classicId}/favorite`, {
-                method: 'POST',
-                credentials: 'include',
-            });
-            if (!response.ok) {
-                throw new Error('操作失败');
-            }
-            // 从收藏列表中移除
-            setFavorites(favorites.filter(classic => classic.id !== classicId));
+            await toggleFavorite(classic);
         } catch (err) {
             console.error('Failed to toggle favorite:', err);
         }
     };
 
-    if (loading) {
+    // 显示全局加载状态 - 包括Auth加载和数据加载
+    if (authLoading || loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
@@ -103,44 +100,33 @@ export default function Favorites() {
                     {favorites.map((classic) => (
                         <div
                             key={classic.id}
-                            className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+                            className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full"
                         >
-                            <Link to={`/classics/${classic.id}`} className="block">
-                                <div className="aspect-w-16 aspect-h-9 bg-gray-100 relative">
-                                    {classic.cover_image ? (
-                                        <img
-                                            src={classic.cover_image}
-                                            alt={classic.title}
-                                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    ) : (
-                                        <div className="flex items-center justify-center h-full bg-gray-100">
-                                            <span className="text-gray-400 text-4xl">
-                                                {classic.title[0]}
-                                            </span>
-                                        </div>
-                                    )}
-                                    <div className="absolute top-2 right-2">
-                                        <FavoriteButton
-                                            isFavorite={true}
-                                            onToggle={() => toggleFavorite(classic.id)}
-                                        />
-                                    </div>
+                            <div className="p-6 flex-grow flex flex-col relative">
+                                <div className="absolute top-4 right-4">
+                                    <FavoriteButton
+                                        isFavorite={true}
+                                        onToggle={() => handleToggleFavorite(classic)}
+                                    />
                                 </div>
-                            </Link>
-                            <div className="p-4">
-                                <Link to={`/classics/${classic.id}`}>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-2 group-hover:text-green-600 transition-colors">
+                                
+                                <Link to={`/classics/${classic.id}`} className="mb-4">
+                                    <h3 className="text-xl font-serif font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors break-words leading-relaxed">
                                         {classic.title}
                                     </h3>
                                 </Link>
-                                <p className="text-sm text-gray-600 mb-2">
-                                    {classic.dynasty} · {classic.author}
-                                </p>
-                                <p className="text-sm text-gray-500 line-clamp-2">
-                                    {classic.description}
-                                </p>
-                                <div className="mt-4">
+                                
+                                <div className="flex-grow">
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        <span className="mr-1">{classic.dynasty}</span> · 
+                                        <span className="ml-1 font-medium">{classic.author}</span>
+                                    </p>
+                                    <p className="text-sm text-gray-500 mb-4">
+                                        {classic.description}
+                                    </p>
+                                </div>
+                                
+                                <div className="mt-auto">
                                     <span className="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
                                         {classic.category}
                                     </span>

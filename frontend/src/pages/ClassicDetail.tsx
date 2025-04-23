@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { getClassicById } from '../services/classics';
 import { Classic } from '../types/classic';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -9,6 +9,9 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { addPinyinAnnotation } from '../utils/pinyin';
 import CharacterExplanation from '../components/CharacterExplanation';
+import FavoriteButton from '../components/FavoriteButton';
+import { useAuth } from '../contexts/AuthContext';
+import { useHistory } from '../contexts/HistoryContext';
 
 interface Comment {
   id: string;
@@ -74,6 +77,10 @@ const ClassicDetail: React.FC = () => {
   const [chatMessages, setChatMessages] = useState<{ role: 'user' | 'assistant', content: string, timestamp: Date }[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const { user, toggleFavorite, checkIsFavorite } = useAuth();
+  const { addToHistory } = useHistory();
+  const [isFavorite, setIsFavorite] = useState(false);
+  const navigate = useNavigate();
 
   // 添加朗读功能相关状态
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -106,102 +113,6 @@ const ClassicDetail: React.FC = () => {
   const [isReadingMode, setIsReadingMode] = useState(false);
   const [isExplanationMode, setIsExplanationMode] = useState(false);
 
-  // 初始化语音合成和获取可用语音
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      speechSynthesisRef.current = window.speechSynthesis;
-
-      // 获取可用语音
-      const loadVoices = () => {
-        const voices = speechSynthesisRef.current?.getVoices() || [];
-        console.log('可用语音列表:', voices); // 调试用，查看所有可用语音
-
-        // 优先选择中文语音，按优先级排序
-        const chineseVoicePatterns = [
-          // 微软晓晓在线语音 - 设为最高优先级
-          { pattern: /Microsoft.*Xiaoxiao.*Online.*Natural.*Chinese|Microsoft.*Xiaoxiao|Xiaoxiao/i, priority: 1 },
-          // 其他微软中文语音
-          { pattern: /Microsoft.*Chinese|Microsoft.*Kangkang|Microsoft.*Yaoyao|Microsoft.*Huihui/i, priority: 2 },
-          // 谷歌中文语音
-          { pattern: /Google.*Chinese/i, priority: 3 },
-          // 苹果中文语音
-          { pattern: /Ting-Ting|Sin-ji|Mei-Jia/i, priority: 4 },
-          // 其他中文语音
-          { pattern: /Chinese|Mandarin|zh[-_]CN|zh[-_]TW|zh[-_]HK|cmn/i, priority: 5 }
-        ];
-
-        // 过滤并排序中文语音
-        let chineseVoices = voices.filter(voice => {
-          // 检查语音是否匹配任一中文模式
-          return chineseVoicePatterns.some(pattern =>
-            pattern.pattern.test(voice.name) || pattern.pattern.test(voice.lang)
-          );
-        });
-
-        // 按优先级排序
-        chineseVoices.sort((a, b) => {
-          const aPriority = chineseVoicePatterns.find(p =>
-            p.pattern.test(a.name) || p.pattern.test(a.lang)
-          )?.priority || 999;
-
-          const bPriority = chineseVoicePatterns.find(p =>
-            p.pattern.test(b.name) || p.pattern.test(b.lang)
-          )?.priority || 999;
-
-          return aPriority - bPriority;
-        });
-
-        // 设置可用语音列表
-        if (chineseVoices.length > 0) {
-          setAvailableVoices(chineseVoices);
-          console.log('找到中文语音:', chineseVoices.length, '个');
-        } else {
-          // 如果没有中文语音，则使用所有语音
-          setAvailableVoices(voices);
-          console.log('未找到中文语音，使用所有可用语音');
-        }
-
-        // 只有在初始化时（selectedVoice为空）才设置默认语音
-        if (chineseVoices.length > 0) {
-          // 尝试找到XiaoXiao语音
-          const xiaoxiaoVoice = chineseVoices.find(voice =>
-            /Microsoft.*Xiaoxiao.*Online.*Natural.*Chinese|Microsoft.*Xiaoxiao|Xiaoxiao/i.test(voice.name)
-          );
-
-          if (xiaoxiaoVoice) {
-            // 如果找到XiaoXiao语音，设置为默认语音
-            setSelectedVoice(xiaoxiaoVoice.name);
-            console.log('已选择XiaoXiao语音:', xiaoxiaoVoice.name);
-          } else {
-            // 如果没有找到XiaoXiao语音，使用排序后的第一个中文语音
-            setSelectedVoice(chineseVoices[0].name);
-            console.log('未找到XiaoXiao语音，使用默认中文语音:', chineseVoices[0].name);
-          }
-        } else if (voices.length > 0) {
-          // 如果没有中文语音，则选择第一个可用语音
-          setSelectedVoice(voices[0].name);
-          console.log('未找到中文语音，使用默认语音:', voices[0].name);
-        }
-      };
-
-      // Chrome需要监听voiceschanged事件
-      speechSynthesisRef.current.onvoiceschanged = loadVoices;
-
-      // 立即尝试加载一次
-      loadVoices();
-
-      // 确保在Firefox和Safari等浏览器中也能加载语音
-      setTimeout(loadVoices, 1000);
-    }
-
-    return () => {
-      // 组件卸载时停止朗读
-      if (speechSynthesisRef.current && isSpeaking) {
-        speechSynthesisRef.current.cancel();
-      }
-    };
-  }, [isSpeaking, selectedVoice]);
-
   useEffect(() => {
     const fetchClassic = async () => {
       try {
@@ -209,6 +120,12 @@ const ClassicDetail: React.FC = () => {
         const data = await getClassicById(parseInt(id!));
         console.log('获取到的古籍数据：', data);
         setClassic(data);
+        
+        // 获取数据后添加到历史记录
+        if (data) {
+          // 强制类型转换来解决类型问题
+          addToHistory(data as any);
+        }
       } catch (err) {
         console.error('Error fetching classic:', err);
         setError('获取古籍详情失败，请稍后重试');
@@ -220,7 +137,17 @@ const ClassicDetail: React.FC = () => {
     if (id) {
       fetchClassic();
     }
-  }, [id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]); // 使用eslint注释忽略addToHistory依赖
+
+  // 检查收藏状态
+  useEffect(() => {
+    if (classic && user) {
+      setIsFavorite(checkIsFavorite(classic.id));
+    } else {
+      setIsFavorite(false);
+    }
+  }, [classic, user, checkIsFavorite]);
 
   // 添加调试信息
   useEffect(() => {
@@ -769,6 +696,20 @@ ${classic?.content}
     console.log('从句子', index, '开始朗读');
   };
 
+  // 处理收藏切换
+  const handleToggleFavorite = async () => {
+    if (!user) {
+      // 如果用户未登录，重定向到登录页面
+      navigate('/login');
+      return;
+    }
+
+    if (classic) {
+      const newFavoriteStatus = await toggleFavorite(classic);
+      setIsFavorite(newFavoriteStatus);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -789,17 +730,22 @@ ${classic?.content}
     <div className="space-y-8">
       {/* 古籍基本信息 */}
       <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-        <h1 className="text-3xl font-bold text-[#2c3e50] font-serif mb-4">{classic.title}</h1>
-        <div className="text-[#666] mb-6">
-          <span className="mr-4">作者：{classic.author}</span>
-          <span className="mr-4">朝代：{classic.dynasty}</span>
-          <span>分类：{classic.category}</span>
-        </div>
-
-        {/* 修改功能按钮区域 */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-2">
-            <h2 className="text-2xl font-bold font-serif text-[#2c3e50]">原文</h2>
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
+          <div>
+            <h1 className="text-3xl font-bold text-[#2c3e50] font-serif mb-2">{classic.title}</h1>
+            <div className="text-[#666] mb-6">
+              <span className="mr-4">作者：{classic.author}</span>
+              <span className="mr-4">朝代：{classic.dynasty}</span>
+              <span>分类：{classic.category}</span>
+            </div>
+          </div>
+          <div className="flex items-center mt-4 md:mt-0">
+            {/* 添加收藏按钮 */}
+            <FavoriteButton 
+              isFavorite={isFavorite} 
+              onToggle={handleToggleFavorite} 
+              className="mr-4"
+            />
             <div className="flex space-x-2">
               {/* 拼音按钮 */}
               <button
@@ -868,57 +814,6 @@ ${classic?.content}
               )}
             </div>
           </div>
-
-          {/* 语音设置面板 - 默认隐藏，点击设置按钮显示 */}
-          {showSpeechSettings && (
-            <div className="bg-[#f8f5f0] p-3 rounded-md mb-4 transition-all duration-300">
-              <div className="text-sm font-medium text-[#2c3e50] mb-2">朗读设置</div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm text-[#666] mb-1">选择语音</label>
-                  <select
-                    value={selectedVoice}
-                    onChange={(e) => setSelectedVoice(e.target.value)}
-                    className="w-full p-2 border border-[#e8e4e0] rounded bg-white"
-                  >
-                    {availableVoices.map((voice) => (
-                      <option key={voice.name} value={voice.name}>
-                        {voice.name} ({voice.lang})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-[#666] mb-1">语速: {speechRate.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="1.0"
-                      step="0.1"
-                      value={speechRate}
-                      onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-[#666] mb-1">音调: {speechPitch.toFixed(1)}</label>
-                    <input
-                      type="range"
-                      min="0.1"
-                      max="2.0"
-                      step="0.1"
-                      value={speechPitch}
-                      onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
-                      className="w-full"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* 修改原文显示部分，添加拼音标注 */}

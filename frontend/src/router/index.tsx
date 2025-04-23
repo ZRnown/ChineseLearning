@@ -21,7 +21,7 @@ const router = createBrowserRouter([
     element: <Classics />
   },
   {
-    path: '/classic/:id',
+    path: '/classics/:id',
     element: <ClassicDetail />
   },
   {
@@ -30,7 +30,7 @@ const router = createBrowserRouter([
   },
   {
     path: '/login',
-    element: <Login onLogin={() => { }} />
+    element: <Login />
   },
   {
     path: '/register',

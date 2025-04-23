@@ -1,28 +1,15 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { BiUser, BiLockAlt } from 'react-icons/bi';
-import { login } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
 
-interface User {
-    username: string;
-    email: string;
-}
-
-interface LoginResponse {
-    user: User;
-    token: string;
-}
-
-interface LoginProps {
-    onLogin: (user: User) => void;
-}
-
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -30,8 +17,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         setLoading(true);
 
         try {
-            const response = await login(username, password) as LoginResponse;
-            onLogin(response.user);
+            await login(username, password);
             navigate('/');
         } catch (err) {
             console.error('Login error:', err);

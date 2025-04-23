@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import or_  # 添加这一行
+from sqlalchemy import or_
 from typing import List, Optional
 from ..database import get_db
 from .. import models, schemas
 from ..auth import get_current_user_optional, get_current_user
 from pydantic import BaseModel
-from datetime import datetime
 import logging
 
 router = APIRouter()
@@ -18,7 +17,6 @@ class ClassicBase(BaseModel):
     author: str
     dynasty: str
     content: str
-    translation: Optional[str] = None
 
 
 class ClassicCreate(ClassicBase):
@@ -27,8 +25,6 @@ class ClassicCreate(ClassicBase):
 
 class Classic(ClassicBase):
     id: int
-    created_at: datetime
-    updated_at: Optional[datetime] = None
     is_favorite: bool = False
     is_liked: bool = False
 
@@ -48,14 +44,13 @@ class TranslationCreate(TranslationBase):
 class Translation(TranslationBase):
     id: int
     classic_id: int
-    created_at: str
 
     class Config:
         from_attributes = True
 
 
 class PaginatedResponse(BaseModel):
-    items: List[Classic]
+    items: List[schemas.Classic]
     total: int
     skip: int
     limit: int
@@ -72,34 +67,57 @@ def get_classics(
 ):
     """获取古籍列表，支持分页和筛选"""
     try:
-        logger.info(f"Fetching classics with params: skip={skip}, limit={limit}, category={category}, dynasty={dynasty}")
-        
+        logger.info(
+            f"Fetching classics with params: skip={skip}, limit={limit}, "
+            f"category={category}, dynasty={dynasty}"
+        )
+
         # 构建查询
         query = db.query(models.Classic)
-        
+
         # 应用筛选条件
         if category:
             query = query.filter(models.Classic.category == category)
         if dynasty:
             query = query.filter(models.Classic.dynasty == dynasty)
-            
+
         # 获取总数
         total = query.count()
-        
+
         # 应用分页
         classics = query.offset(skip).limit(limit).all()
         logger.info(f"Found {len(classics)} classics")
-        
-        # 返回分页响应
-        return {
-            "items": classics,
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
+
+        # 转换模型
+        classic_items = []
+        for classic in classics:
+            classic_dict = {
+                "id": classic.id,
+                "title": classic.title,
+                "author": classic.author,
+                "dynasty": classic.dynasty,
+                "content": classic.content,
+                "is_favorite": False,
+                "is_liked": False,
+            }
+            if current_user:
+                classic_dict["is_favorite"] = any(
+                    f.user_id == current_user.id for f in classic.favorites
+                )
+                classic_dict["is_liked"] = any(
+                    like.user_id == current_user.id for like in classic.likes
+                )
+            classic_items.append(schemas.Classic(**classic_dict))
+
+        return PaginatedResponse(
+            items=classic_items, total=total, skip=skip, limit=limit
+        )
     except Exception as e:
         logger.error(f"Error fetching classics: {str(e)}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to fetch classics",
+        )
 
 
 @router.get("/{classic_id}", response_model=schemas.Classic)
@@ -295,33 +313,35 @@ async def search_classics(
     """搜索古籍，支持按标题、内容、作者或全部字段搜索"""
     try:
         # 记录请求参数，帮助调试
-        logger.info(f"搜索请求参数: query={query}, search_type={search_type}, skip={skip}, limit={limit}")
-        
+        logger.info(
+            f"搜索请求参数: query={query}, search_type={search_type}, skip={skip}, limit={limit}"
+        )
+
         # 参数验证
         if not query:
             raise HTTPException(status_code=400, detail="搜索关键词不能为空")
-        
+
         if isinstance(limit, str):
             try:
                 limit = int(limit)
             except ValueError:
                 limit = 10
-                
+
         if isinstance(skip, str):
             try:
                 skip = int(skip)
             except ValueError:
                 skip = 0
-        
+
         if limit < 1 or limit > 100:
             limit = 10
-            
+
         if skip < 0:
             skip = 0
-            
+
         # 构建查询
         base_query = db.query(models.Classic)
-        
+
         # 根据搜索类型应用不同的过滤条件
         if search_type == "title":
             filter_condition = models.Classic.title.contains(query)
@@ -333,25 +353,20 @@ async def search_classics(
             filter_condition = or_(
                 models.Classic.title.contains(query),
                 models.Classic.content.contains(query),
-                models.Classic.author.contains(query)
+                models.Classic.author.contains(query),
             )
-        
+
         search_query = base_query.filter(filter_condition)
-        
+
         # 获取总数
         total = search_query.count()
-        
+
         # 应用分页
         classics = search_query.offset(skip).limit(limit).all()
         logger.info(f"找到 {len(classics)} 条匹配的古籍")
-        
+
         # 返回分页响应
-        return {
-            "items": classics,
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
+        return {"items": classics, "total": total, "skip": skip, "limit": limit}
     except HTTPException as he:
         logger.error(f"搜索古籍HTTP异常: {str(he)}")
         raise
@@ -363,10 +378,12 @@ async def search_classics(
 
 from pydantic import BaseModel
 
+
 # 添加搜索请求模型
 class SearchRequest(BaseModel):
     query: str
     search_type: str = "all"
+
 
 @router.post("/search", response_model=PaginatedResponse)
 async def search_classics_post(
@@ -380,22 +397,24 @@ async def search_classics_post(
     try:
         query = search_req.query
         search_type = search_req.search_type
-        
-        logger.info(f"POST搜索古籍: query={query}, type={search_type}, skip={skip}, limit={limit}")
-        
+
+        logger.info(
+            f"POST搜索古籍: query={query}, type={search_type}, skip={skip}, limit={limit}"
+        )
+
         # 参数验证
         if not query:
             raise HTTPException(status_code=400, detail="搜索关键词不能为空")
-        
+
         if limit < 1 or limit > 100:
             limit = 10
-            
+
         if skip < 0:
             skip = 0
-            
+
         # 构建查询
         base_query = db.query(models.Classic)
-        
+
         # 根据搜索类型应用不同的过滤条件
         if search_type == "title":
             filter_condition = models.Classic.title.contains(query)
@@ -407,25 +426,20 @@ async def search_classics_post(
             filter_condition = or_(
                 models.Classic.title.contains(query),
                 models.Classic.content.contains(query),
-                models.Classic.author.contains(query)
+                models.Classic.author.contains(query),
             )
-        
+
         search_query = base_query.filter(filter_condition)
-        
+
         # 获取总数
         total = search_query.count()
-        
+
         # 应用分页
         classics = search_query.offset(skip).limit(limit).all()
         logger.info(f"找到 {len(classics)} 条匹配的古籍")
-        
+
         # 返回分页响应
-        return {
-            "items": classics,
-            "total": total,
-            "skip": skip,
-            "limit": limit
-        }
+        return {"items": classics, "total": total, "skip": skip, "limit": limit}
     except HTTPException:
         raise
     except Exception as e:

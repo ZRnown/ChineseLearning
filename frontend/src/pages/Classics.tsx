@@ -247,7 +247,7 @@ const Classics: React.FC = () => {
                             classics.map((classic) => (
                                 <Link 
                                     key={classic.id}
-                                    to={`/classic/${classic.id}`}
+                                    to={`/classics/${classic.id}`}
                                     className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                 >
                                     <h2 className="text-2xl font-serif font-bold mb-2 text-black tracking-wide">{classic.title}</h2>
