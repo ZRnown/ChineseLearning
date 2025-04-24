@@ -6,7 +6,8 @@ interface AuthorIntroductionProps {
     onClose: () => void;
     author: string;
     introduction: string;
-    isLoading?: boolean;
+    selectedLanguage?: string;
+    translatedIntroduction?: string;
 }
 
 const AuthorIntroduction: React.FC<AuthorIntroductionProps> = ({
@@ -14,21 +15,23 @@ const AuthorIntroduction: React.FC<AuthorIntroductionProps> = ({
     onClose,
     author,
     introduction,
-    isLoading = false,
+    selectedLanguage = 'zh',
+    translatedIntroduction,
 }) => {
     if (!isOpen) return null;
 
+    // 根据选择的语言决定显示原文还是翻译
+    const displayText = selectedLanguage !== 'zh' && translatedIntroduction
+        ? translatedIntroduction
+        : introduction;
+
     return (
-        <div className="work-explanation-modal author-introduction-modal">
-            <div className="work-explanation-content author-introduction-content">
+        <div className="author-introduction-modal">
+            <div className="author-introduction-content">
                 <button className="close-button" onClick={onClose}>×</button>
-                <h2>《{author}》 作者简介</h2>
-                <div className="work-explanation-text author-introduction-text">
-                    {isLoading ? (
-                        <div className="loading-indicator">加载中...</div>
-                    ) : (
-                        introduction || '暂无作者介绍'
-                    )}
+                <h2>{author} {selectedLanguage === 'zh' ? '简介' : 'Introduction'}</h2>
+                <div className="author-introduction-text">
+                    {displayText || '暂无作者介绍'}
                 </div>
             </div>
         </div>

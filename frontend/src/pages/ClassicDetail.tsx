@@ -864,8 +864,46 @@ ${classic?.content}
       return;
     }
 
-    // 如果没有预设翻译，显示原文
-    setTranslatedAuthorIntroduction('');
+    // 如果没有预设翻译，调用翻译API
+    try {
+      setIsLoadingAuthorIntro(true);
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: authorIntroduction,
+          sourceLang: 'zh',
+          targetLang: selectedLanguage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`翻译请求失败: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.translatedText) {
+        setTranslatedAuthorIntroduction(data.translatedText);
+
+        // 缓存翻译结果
+        setAuthorIntroductionCache(prev => {
+          const newCache = { ...prev };
+          newCache[cacheKey] = data.translatedText;
+          return newCache;
+        });
+      } else {
+        // 如果翻译失败，显示原文
+        setTranslatedAuthorIntroduction(authorIntroduction);
+      }
+    } catch (error) {
+      console.error('翻译作者简介失败:', error);
+      // 出错时显示原文
+      setTranslatedAuthorIntroduction(authorIntroduction);
+    } finally {
+      setIsLoadingAuthorIntro(false);
+    }
   };
 
   // Update translated author introduction when language changes
@@ -923,8 +961,46 @@ ${classic?.content}
       return;
     }
 
-    // 如果没有预设翻译，显示原文
-    setTranslatedWorkExplanation('');
+    // 调用翻译API翻译作品简介
+    try {
+      setIsLoadingWorkExplanation(true);
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          text: workExplanation,
+          sourceLang: 'zh',
+          targetLang: selectedLanguage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`翻译请求失败: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.translatedText) {
+        setTranslatedWorkExplanation(data.translatedText);
+
+        // 缓存翻译结果
+        setWorkExplanationCache(prev => {
+          const newCache = { ...prev };
+          newCache[cacheKey] = data.translatedText;
+          return newCache;
+        });
+      } else {
+        // 如果翻译失败，显示原文
+        setTranslatedWorkExplanation(workExplanation);
+      }
+    } catch (error) {
+      console.error('翻译作品简介失败:', error);
+      // 出错时显示原文
+      setTranslatedWorkExplanation(workExplanation);
+    } finally {
+      setIsLoadingWorkExplanation(false);
+    }
   };
 
   // Update translated work explanation when language changes

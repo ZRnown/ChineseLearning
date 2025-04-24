@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#8b4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- 书本封面 -->
+  <path d="M4 3.5C4 2.67 4.67 2 5.5 2H18.5C19.33 2 20 2.67 20 3.5V20.5C20 21.33 19.33 22 18.5 22H5.5C4.67 22 4 21.33 4 20.5V3.5Z" fill="#f5f2e8" stroke="#8b4513"/>
+  
+  <!-- 书页 -->
+  <path d="M8 7H16" stroke="#8b4513" stroke-width="1"/>
+  <path d="M8 10H16" stroke="#8b4513" stroke-width="1"/>
+  <path d="M8 13H16" stroke="#8b4513" stroke-width="1"/>
+  <path d="M8 16H12" stroke="#8b4513" stroke-width="1"/>
+  
+  <!-- 中国风装饰元素 -->
+  <path d="M6 4.5H18" stroke="#8b4513" stroke-width="1.5"/>
+  <path d="M6 19.5H18" stroke="#8b4513" stroke-width="1.5"/>
+  
+  <!-- 书签 -->
+  <path d="M17 6V12L15.5 11 14 12V6" fill="#d9c9a3" stroke="#8b4513" stroke-width="1"/>
+  
+  <!-- 中文字符"文" -->
+  <path d="M12 9.5C12.8284 9.5 13.5 8.82843 13.5 8C13.5 7.17157 12.8284 6.5 12 6.5C11.1716 6.5 10.5 7.17157 10.5 8C10.5 8.82843 11.1716 9.5 12 9.5Z" fill="#8b4513"/>
+  <path d="M12 8V11.5" stroke="#8b4513" stroke-width="1"/>
+  <path d="M10.5 10H13.5" stroke="#8b4513" stroke-width="1"/>
+</svg> 

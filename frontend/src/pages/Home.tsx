@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BiBook, BiGlobe, BiBookmark, BiHistory } from 'react-icons/bi';
+import { BiBook, BiGlobe, BiBookmark, BiHistory, BiCommentDetail, BiHeadphone, BiBookReader, BiSearch, BiChevronDown, BiChevronUp } from 'react-icons/bi';
 
 const features = [
     {
@@ -29,7 +29,156 @@ const features = [
     }
 ];
 
+// 定义使用说明部分的数据
+const instructionSections = [
+    {
+        id: 'browse',
+        title: '浏览与查找古籍',
+        summary: '探索古籍列表，通过朝代、类别或关键词搜索查找您感兴趣的作品。',
+        content: (
+            <>
+                <p className="mb-2">1. 点击"开始导读"或导航栏中的"古籍列表"，进入古籍浏览页面。</p>
+                <p className="mb-2">2. 您可以通过以下方式筛选古籍：</p>
+                <ul className="list-disc list-inside ml-6 space-y-1">
+                    <li>按朝代筛选（唐代、宋代、明代等）</li>
+                    <li>按类别筛选（诗词、散文、词等）</li>
+                    <li>使用搜索框按标题、作者或内容关键词搜索</li>
+                </ul>
+                <p className="mt-2">3. 点击任意古籍卡片进入详细阅读页面。</p>
+            </>
+        )
+    },
+    {
+        id: 'read',
+        title: '阅读与学习功能',
+        summary: '通过拼音标注、词汇解释、朗读功能等多种方式增强您的阅读体验。',
+        content: (
+            <>
+                <p className="mb-2">在古籍详情页面，您可以使用以下功能增强阅读体验：</p>
+                <ul className="list-disc list-inside ml-6 space-y-1">
+                    <li><strong>拼音标注：</strong> 点击上方的拼音按钮，为文本添加拼音注解</li>
+                    <li><strong>词汇解释：</strong> 点击任意汉字，查看该字的详细解释和用法</li>
+                    <li><strong>作者简介：</strong> 点击作者名字，了解作者生平和创作背景</li>
+                    <li><strong>作品解析：</strong> 点击作品标题，获取专业的作品内容解析</li>
+                    <li><strong>朗读功能：</strong> 点击播放按钮，聆听优美的古文朗读，可调整语速和音调</li>
+                </ul>
+            </>
+        )
+    },
+    {
+        id: 'translate',
+        title: '翻译与理解',
+        summary: '利用多语言翻译和AI导读功能深入理解古典文学内容。',
+        content: (
+            <>
+                <p className="mb-2">我们提供多种辅助理解工具：</p>
+                <ul className="list-disc list-inside ml-6 space-y-1">
+                    <li><strong>多语言翻译：</strong> 选择您需要的语言（支持超过30种语言），点击翻译按钮获取翻译结果</li>
+                    <li><strong>AI导读：</strong> 点击AI导读按钮，获取智能分析的内容概要、写作背景和文学赏析</li>
+                    <li><strong>互动对话：</strong> 在对话框中提问，与AI助手深入交流对文本的疑问和理解</li>
+                </ul>
+            </>
+        )
+    },
+    {
+        id: 'personal',
+        title: '个性化功能',
+        summary: '收藏喜爱的作品，记录阅读历史，添加个人笔记，参与评论互动。',
+        content: (
+            <>
+                <p className="mb-2">登录后，您可以使用以下个性化功能：</p>
+                <ul className="list-disc list-inside ml-6 space-y-1">
+                    <li><strong>收藏功能：</strong> 点击心形图标，将喜爱的古籍加入收藏夹</li>
+                    <li><strong>阅读历史：</strong> 系统自动记录您的阅读历史，便于继续学习</li>
+                    <li><strong>笔记功能：</strong> 添加个人笔记，记录学习心得</li>
+                    <li><strong>评论互动：</strong> 在评论区分享您的见解，与其他读者交流</li>
+                </ul>
+            </>
+        )
+    },
+    {
+        id: 'tips',
+        title: '学习建议',
+        summary: '遵循专业学习路径，循序渐进地探索古典文学的魅力。',
+        content: (
+            <>
+                <p className="mb-2">为了获得最佳学习效果，我们建议：</p>
+                <ul className="list-disc list-inside ml-6 space-y-1">
+                    <li>先阅读原文，尝试自行理解</li>
+                    <li>使用拼音辅助正确读音</li>
+                    <li>点击不理解的字词查看解释</li>
+                    <li>查看翻译帮助理解全文</li>
+                    <li>通过AI导读深入了解文学价值</li>
+                    <li>最后使用朗读功能感受语言之美</li>
+                </ul>
+            </>
+        )
+    }
+];
+
+// 可折叠的部分组件
+interface CollapsibleSectionProps {
+    title: string;
+    summary: string;
+    children: React.ReactNode;
+    isOpen: boolean;
+    toggleOpen: () => void;
+}
+
+const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, summary, children, isOpen, toggleOpen }) => {
+    return (
+        <div className="border-b border-[#e8e4e0] py-3">
+            <div
+                className="flex justify-between items-center cursor-pointer"
+                onClick={toggleOpen}
+            >
+                <div>
+                    <h3 className="text-xl font-bold text-[#2c3e50] mb-1">{title}</h3>
+                    {!isOpen && <p className="text-[#666]">{summary}</p>}
+                </div>
+                <div className="text-[#8b4513] text-xl">
+                    {isOpen ? <BiChevronUp /> : <BiChevronDown />}
+                </div>
+            </div>
+
+            {isOpen && (
+                <div className="mt-3 border-l-4 border-[#8b4513] pl-4 py-2">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Home: React.FC = () => {
+    // 使用状态管理每个部分的展开/折叠状态
+    const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+    // 切换某个部分的展开/折叠状态
+    const toggleSection = (id: string) => {
+        setOpenSections(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
+
+    // 展开/折叠所有部分
+    const [allExpanded, setAllExpanded] = useState(false);
+    const toggleAllSections = () => {
+        if (allExpanded) {
+            // 全部折叠
+            setOpenSections({});
+        } else {
+            // 全部展开
+            const allOpen: Record<string, boolean> = {};
+            instructionSections.forEach(section => {
+                allOpen[section.id] = true;
+            });
+            setOpenSections(allOpen);
+        }
+        setAllExpanded(!allExpanded);
+    };
+
     return (
         <div className="space-y-12">
             {/* 欢迎区域 */}
@@ -60,18 +209,30 @@ const Home: React.FC = () => {
             </div>
 
             {/* 使用说明 */}
-            <div className="bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0]">
-                <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-4">使用说明</h2>
-                <div className="space-y-4 text-[#666]">
-                    <p>1. 点击"开始导读"进入古籍列表</p>
-                    <p>2. 选择感兴趣的古籍进行阅读</p>
-                    <p>3. 在古籍详情页面可以：</p>
-                    <ul className="list-disc list-inside ml-4">
-                        <li>查看原文内容</li>
-                        <li>选择不同语言进行翻译</li>
-                        <li>使用 AI 导读功能获取深入解析</li>
-                        <li>收藏喜爱的古籍</li>
-                    </ul>
+            <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
+                <div className="flex justify-between items-center mb-6">
+                    <h2 className="text-2xl font-bold text-[#2c3e50] font-serif">使用说明</h2>
+                    <button
+                        onClick={toggleAllSections}
+                        className="text-sm px-3 py-1 bg-[#f5f2e8] text-[#8b4513] rounded border border-[#d9c9a3] hover:bg-[#e8e4e0] flex items-center"
+                    >
+                        {allExpanded ? '全部折叠' : '全部展开'}
+                        {allExpanded ? <BiChevronUp className="ml-1" /> : <BiChevronDown className="ml-1" />}
+                    </button>
+                </div>
+
+                <div className="space-y-1">
+                    {instructionSections.map(section => (
+                        <CollapsibleSection
+                            key={section.id}
+                            title={section.title}
+                            summary={section.summary}
+                            isOpen={!!openSections[section.id]}
+                            toggleOpen={() => toggleSection(section.id)}
+                        >
+                            {section.content}
+                        </CollapsibleSection>
+                    ))}
                 </div>
             </div>
         </div>
