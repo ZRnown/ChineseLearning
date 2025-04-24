@@ -37,7 +37,7 @@ export default function FavoriteButton({
             onClick={handleClick}
             className={`
                 relative p-2 rounded-full transition-all duration-300
-                ${localIsFavorite ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}
+                ${localIsFavorite ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}
                 ${isAnimating ? 'scale-125' : 'scale-100'}
                 ${className}
             `}
@@ -48,7 +48,7 @@ export default function FavoriteButton({
                 <HeartIcon className="h-6 w-6" />
             )}
             {isAnimating && (
-                <div className="absolute inset-0 rounded-full bg-red-100 animate-ping opacity-75" />
+                <div className="absolute inset-0 rounded-full bg-red-100 dark:bg-red-900/30 animate-ping opacity-75" />
             )}
         </button>
     );

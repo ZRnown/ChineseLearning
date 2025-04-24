@@ -55,7 +55,7 @@ export default function Favorites() {
     if (authLoading || loading) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600"></div>
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#8b4513] dark:border-[#d9c9a3] transition-colors duration-200"></div>
             </div>
         );
     }
@@ -63,11 +63,11 @@ export default function Favorites() {
     if (error) {
         return (
             <div className="flex items-center justify-center min-h-screen">
-                <div className="text-red-600 text-center">
+                <div className="text-red-600 dark:text-red-400 text-center transition-colors duration-200">
                     <p className="text-lg font-medium">{error}</p>
                     <button
                         onClick={fetchFavorites}
-                        className="mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="mt-4 px-4 py-2 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
                     >
                         重试
                     </button>
@@ -79,18 +79,18 @@ export default function Favorites() {
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900 mb-4">我的收藏</h1>
-                <p className="text-gray-600">
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-4 transition-colors duration-200">我的收藏</h1>
+                <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">
                     共收藏 {favorites.length} 本古籍
                 </p>
             </div>
 
             {favorites.length === 0 ? (
                 <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">您还没有收藏任何古籍</p>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4 transition-colors duration-200">您还没有收藏任何古籍</p>
                     <Link
                         to="/classics"
-                        className="inline-block px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                        className="inline-block px-4 py-2 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
                     >
                         浏览古籍
                     </Link>
@@ -100,7 +100,7 @@ export default function Favorites() {
                     {favorites.map((classic) => (
                         <div
                             key={classic.id}
-                            className="group bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full"
+                            className="group bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-full"
                         >
                             <div className="p-6 flex-grow flex flex-col relative">
                                 <div className="absolute top-4 right-4">
@@ -109,25 +109,25 @@ export default function Favorites() {
                                         onToggle={() => handleToggleFavorite(classic)}
                                     />
                                 </div>
-                                
+
                                 <Link to={`/classics/${classic.id}`} className="mb-4">
-                                    <h3 className="text-xl font-serif font-bold text-gray-900 mb-3 group-hover:text-green-600 transition-colors break-words leading-relaxed">
+                                    <h3 className="text-xl font-serif font-bold text-gray-900 dark:text-gray-100 mb-3 group-hover:text-[#8b4513] dark:group-hover:text-[#d9c9a3] transition-colors break-words leading-relaxed">
                                         {classic.title}
                                     </h3>
                                 </Link>
-                                
+
                                 <div className="flex-grow">
-                                    <p className="text-sm text-gray-600 mb-4">
-                                        <span className="mr-1">{classic.dynasty}</span> · 
+                                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 transition-colors duration-200">
+                                        <span className="mr-1">{classic.dynasty}</span> ·
                                         <span className="ml-1 font-medium">{classic.author}</span>
                                     </p>
-                                    <p className="text-sm text-gray-500 mb-4">
+                                    <p className="text-sm text-gray-500 dark:text-gray-500 mb-4 transition-colors duration-200">
                                         {classic.description}
                                     </p>
                                 </div>
-                                
+
                                 <div className="mt-auto">
-                                    <span className="inline-block px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full">
+                                    <span className="inline-block px-2 py-1 text-xs font-medium bg-[#8b4513]/10 dark:bg-[#d9c9a3]/10 text-[#8b4513] dark:text-[#d9c9a3] rounded-full transition-colors duration-200">
                                         {classic.category}
                                     </span>
                                 </div>

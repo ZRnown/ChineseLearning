@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, MouseEvent } from 'react';
 import axios from 'axios';
 import '../styles/CharacterExplanation.css';
 
@@ -70,10 +70,21 @@ const CharacterExplanation: React.FC<CharacterExplanationProps> = ({ character, 
         }
     }, [character]);
 
+    // 阻止点击弹窗内容时关闭弹窗
+    const handleContentClick = (e: MouseEvent) => {
+        e.stopPropagation();
+    };
+
+    // 处理关闭按钮点击
+    const handleCloseClick = (e: MouseEvent) => {
+        e.stopPropagation();
+        onClose();
+    };
+
     return (
-        <div className="character-explanation-modal">
-            <div className="character-explanation-content">
-                <button className="close-button" onClick={onClose}>×</button>
+        <div className="character-explanation-modal" onClick={onClose}>
+            <div className="character-explanation-content" onClick={handleContentClick}>
+                <button className="close-button" onClick={handleCloseClick}>×</button>
                 {loading ? (
                     <div className="loading">加载中...</div>
                 ) : error ? (

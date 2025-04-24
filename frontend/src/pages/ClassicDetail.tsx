@@ -15,13 +15,6 @@ import { useHistory } from '../contexts/HistoryContext';
 import AuthorIntroduction from '../components/AuthorIntroduction';
 import WorkExplanation from '../components/WorkExplanation';
 
-interface Comment {
-  id: string;
-  username: string;
-  content: string;
-  createdAt: string;
-}
-
 // 使用更全面的语言列表，按重要性和使用频率排序
 const languages = [
   { code: 'zh', name: '中文' },
@@ -70,8 +63,6 @@ const ClassicDetail: React.FC = () => {
   const [translatedText, setTranslatedText] = useState('');
   const [aiGuide, setAiGuide] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('zh');
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isTranslating, setIsTranslating] = useState(false);
@@ -316,20 +307,6 @@ ${classic?.content}
     } finally {
       setIsGeneratingGuide(false);
     }
-  };
-
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newComment.trim()) return;
-
-    const comment: Comment = {
-      id: Date.now().toString(),
-      username: '当前用户',
-      content: newComment,
-      createdAt: new Date().toISOString()
-    };
-    setComments([...comments, comment]);
-    setNewComment('');
   };
 
   const handleSendMessage = async () => {
@@ -586,7 +563,7 @@ ${classic?.content}
     setShowExplanation(true);
   };
 
-  // 渲染带有可点击字符的文本
+  // 渲染带有可点击字符的文本并添加朗读高亮效果
   const renderClickableText = (text: string) => {
     if (showPinyin) {
       const annotatedText = addPinyinAnnotation(text, { style: pinyinStyle });
@@ -1032,13 +1009,15 @@ ${classic?.content}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
           <div>
-            <h1
-              className="text-3xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-2 cursor-pointer hover:text-[#8b4513] dark:hover:text-[#d9c9a3] transition-colors duration-200"
-              onClick={handleWorkTitleClick}
-              title="点击查看作品解析"
-            >
-              {classic.title}
-            </h1>
+            <div className="flex items-center">
+              <h1
+                className="text-3xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-2 mr-3 cursor-pointer hover:text-[#8b4513] dark:hover:text-[#d9c9a3] transition-colors duration-200"
+                onClick={handleWorkTitleClick}
+                title="点击查看作品解析"
+              >
+                {classic.title}
+              </h1>
+            </div>
             <div className="text-[#666] dark:text-gray-400 mb-6 transition-colors duration-200">
               <span className="mr-4">作者：
                 <span
@@ -1092,9 +1071,114 @@ ${classic?.content}
               >
                 <span className="text-sm">朗读</span>
               </button>
+
+              {/* 只在朗读模式下显示的控制按钮 */}
+              {isReadingMode && (
+                <>
+                  <button
+                    onClick={handleSpeak}
+                    className="ml-2 p-2 rounded-lg bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
+                    title={isSpeaking ? "停止朗读" : "开始朗读"}
+                  >
+                    {isSpeaking ? <BiVolumeMute size={20} /> : <BiVolumeFull size={20} />}
+                  </button>
+
+                  {/* 暂停/继续按钮，只在朗读时显示 */}
+                  {isSpeaking && (
+                    <button
+                      onClick={handlePauseResume}
+                      className="ml-2 p-2 rounded-lg bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
+                      title={isPaused ? "继续" : "暂停"}
+                    >
+                      {isPaused ? <BiPlay size={20} /> : <BiPause size={20} />}
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => setShowSpeechSettings(!showSpeechSettings)}
+                    className="ml-2 p-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
+                    title="朗读设置"
+                  >
+                    <BiCog size={20} />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
+
+        {/* 朗读控制面板 */}
+        {(showSpeechSettings || isSpeaking) && (
+          <div className="mb-6 border-t border-b border-[#e8e4e0] dark:border-gray-700 py-4">
+            {showSpeechSettings && (
+              <div className="p-4 bg-[#f8f5f0] dark:bg-gray-700 rounded-lg transition-colors duration-200 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[#2c3e50] dark:text-gray-200 text-sm font-medium mb-2">语音选择</label>
+                    <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      className="w-full p-2 border border-[#e8e4e0] dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-[#444] dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8b4513] dark:focus:ring-[#d9c9a3] focus:border-transparent transition-colors duration-200"
+                    >
+                      {availableVoices.map((voice) => (
+                        <option key={voice.name} value={voice.name}>
+                          {voice.name} ({voice.lang})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-[#2c3e50] dark:text-gray-200 text-sm font-medium mb-2">
+                      <span>朗读速度</span>
+                      <span>{speechRate.toFixed(1)}</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={speechRate}
+                      onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="flex justify-between text-[#2c3e50] dark:text-gray-200 text-sm font-medium mb-2">
+                      <span>音调</span>
+                      <span>{speechPitch.toFixed(1)}</span>
+                    </label>
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={speechPitch}
+                      onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
+                      className="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isSpeaking && (
+              <div className="px-4">
+                <div className="mb-2 text-[#2c3e50] dark:text-gray-200 text-sm font-medium">当前朗读进度</div>
+                <div className="w-full h-2 bg-gray-300 dark:bg-gray-600 rounded-lg">
+                  <div
+                    className="h-2 bg-[#8b4513] dark:bg-[#d9c9a3] rounded-lg"
+                    style={{ width: `${(currentSentenceIndex / sentences.length) * 100}%` }}
+                  ></div>
+                </div>
+                <div className="mt-2 text-xs text-right text-[#666] dark:text-gray-400">
+                  {currentSentenceIndex >= 0 ? `${currentSentenceIndex + 1}/${sentences.length} 句` : ''}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* 修改原文显示部分，添加拼音标注 */}
         <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] dark:prose-headings:text-gray-100 prose-p:text-[#444] dark:prose-p:text-gray-300 transition-colors duration-200">
@@ -1103,9 +1187,9 @@ ${classic?.content}
               {sentences.map((sentence, index) => (
                 <span
                   key={index}
-                  className={`sentence-container ${currentSentenceIndex === index ? 'reading' : ''}`}
-                  onClick={() => handleSentenceClick(index)}
-                  title={currentSentenceIndex === index ? '正在朗读这句' : '点击开始朗读这句'}
+                  className={`sentence-container ${isReadingMode ? 'readable-sentence' : ''} ${currentSentenceIndex === index ? 'current-reading' : ''}`}
+                  onClick={() => isReadingMode && handleSentenceClick(index)}
+                  title={isReadingMode ? (currentSentenceIndex === index ? '正在朗读这句' : '点击开始朗读这句') : ''}
                 >
                   {renderClickableText(sentence)}
                 </span>
@@ -1138,6 +1222,7 @@ ${classic?.content}
             ))}
           </div>
         </div>
+
         <div className="flex space-x-4">
           <button
             onClick={handleTranslate}
@@ -1266,41 +1351,6 @@ ${classic?.content}
         </div>
       </div>
 
-      {/* 评论区 */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
-        <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-6 transition-colors duration-200">评论区</h2>
-        <form onSubmit={handleAddComment} className="mb-6">
-          <textarea
-            placeholder="写下你的评论..."
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            className="w-full h-32 p-4 text-lg border border-[#e8e4e0] dark:border-gray-600 rounded-lg bg-[#f8f5f0] dark:bg-gray-700 text-[#444] dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8b4513] dark:focus:ring-[#d9c9a3] focus:border-transparent resize-none font-serif transition-colors duration-200"
-          />
-          <button
-            type="submit"
-            className="mt-4 px-4 py-2 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
-          >
-            发表评论
-          </button>
-        </form>
-        <div className="space-y-4">
-          {comments.map((comment) => (
-            <div
-              key={comment.id}
-              className="p-4 bg-[#f8f5f0] dark:bg-gray-700 rounded-lg transition-colors duration-200"
-            >
-              <div className="flex justify-between mb-2">
-                <span className="font-medium text-[#2c3e50] dark:text-gray-200 transition-colors duration-200">{comment.username}</span>
-                <span className="text-sm text-[#666] dark:text-gray-400 transition-colors duration-200">
-                  {new Date(comment.createdAt).toLocaleDateString('zh-CN')}
-                </span>
-              </div>
-              <p className="text-[#444] dark:text-gray-300 transition-colors duration-200">{comment.content}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* 作者简介弹窗 */}
       {showAuthorIntroduction && (
         <AuthorIntroduction
@@ -1324,10 +1374,9 @@ ${classic?.content}
       )}
 
       {/* 字词释义 */}
-      {selectedCharacter && (
+      {selectedCharacter && showExplanation && (
         <CharacterExplanation
           character={selectedCharacter}
-          show={showExplanation}
           onClose={() => setShowExplanation(false)}
         />
       )}

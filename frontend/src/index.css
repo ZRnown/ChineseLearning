@@ -2,10 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* 确保暗色模式在class策略下正常工作 */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 基础样式 */
 @layer base {
   body {
-    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+    @apply bg-white text-gray-900 dark:bg-gray-900 dark:text-gray-100 transition-colors duration-200;
   }
 
   h1,
@@ -14,23 +17,23 @@
   h4,
   h5,
   h6 {
-    @apply dark:text-white;
+    @apply dark:text-white transition-colors duration-200;
   }
 
   a {
-    @apply text-blue-600 dark:text-blue-400;
+    @apply text-blue-600 dark:text-blue-400 transition-colors duration-200;
   }
 
   button,
   input,
   select,
   textarea {
-    @apply dark:bg-gray-800 dark:border-gray-700 dark:text-white;
+    @apply dark:bg-gray-800 dark:border-gray-700 dark:text-white transition-colors duration-200;
   }
 
   /* 卡片样式 */
   .card {
-    @apply bg-white dark:bg-gray-800 shadow rounded-lg p-4;
+    @apply bg-white dark:bg-gray-800 shadow rounded-lg p-4 transition-colors duration-200;
   }
 }
 
@@ -53,10 +56,18 @@
   --title-font-size: 24px;
 }
 
+/* 重置浅色模式颜色 */
+.light {
+  color-scheme: light;
+  color: #213547;
+  background-color: #ffffff;
+}
+
 a {
   font-weight: 500;
   color: #646cff;
   text-decoration: inherit;
+  transition: color 0.2s;
 }
 
 a:hover {
@@ -71,6 +82,7 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: var(--body-font-size);
+  transition: background-color 0.2s, color 0.2s;
 }
 
 h1 {
@@ -102,7 +114,7 @@ button {
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 
 button:hover {
@@ -114,6 +126,7 @@ button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
+/* 适应浅色模式 */
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
@@ -127,6 +140,17 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* 确保暗黑模式下的颜色覆盖 */
+.dark {
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+}
+
+.dark button {
+  background-color: #1a1a1a;
 }
 
 code {
@@ -156,17 +180,17 @@ div {
 
 /* 编辑器样式 */
 textarea {
-  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200;
 }
 
 /* 下拉选择框样式 */
 select {
-  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white;
+  @apply bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200;
 }
 
 /* 代码块样式 */
 .prose pre {
-  @apply bg-gray-100 dark:bg-gray-800 rounded-lg p-4;
+  @apply bg-gray-100 dark:bg-gray-800 rounded-lg p-4 transition-colors duration-200;
 }
 
 

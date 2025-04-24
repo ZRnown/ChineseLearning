@@ -83,15 +83,15 @@ const instructionSections = [
     {
         id: 'personal',
         title: '个性化功能',
-        summary: '收藏喜爱的作品，记录阅读历史，添加个人笔记，参与评论互动。',
+        summary: '收藏喜爱的作品，记录阅读历史，获得个性化学习体验。',
         content: (
             <>
                 <p className="mb-2">登录后，您可以使用以下个性化功能：</p>
                 <ul className="list-disc list-inside ml-6 space-y-1">
                     <li><strong>收藏功能：</strong> 点击心形图标，将喜爱的古籍加入收藏夹</li>
                     <li><strong>阅读历史：</strong> 系统自动记录您的阅读历史，便于继续学习</li>
-                    <li><strong>笔记功能：</strong> 添加个人笔记，记录学习心得</li>
-                    <li><strong>评论互动：</strong> 在评论区分享您的见解，与其他读者交流</li>
+                    <li><strong>AI智能对话：</strong> 根据您的学习进度和兴趣，获得个性化的AI辅导和解答</li>
+                    <li><strong>多设备同步：</strong> 在不同设备上继续您的学习，收藏和历史记录自动同步</li>
                 </ul>
             </>
         )
@@ -178,6 +178,44 @@ const Home: React.FC = () => {
         }
         setAllExpanded(!allExpanded);
     };
+
+    const useInstructions = [
+        {
+            title: '阅读原文',
+            description: '选择感兴趣的古文，系统会展示原文内容。您可以开启拼音功能，辅助阅读。',
+            icon: '📖'
+        },
+        {
+            title: '释义模式',
+            description: '进入释义模式后，点击任意汉字可以查看详细解释，包括字的意思、读音和部首结构。',
+            icon: '🔍'
+        },
+        {
+            title: '朗读功能',
+            description: '进入朗读模式后，点击朗读按钮可以聆听古文朗读。您可以调整语速、音调和声音，或点击特定句子从该处开始朗读。',
+            icon: '🔊'
+        },
+        {
+            title: '智能翻译',
+            description: '选择目标语言，系统会将古文翻译成现代文字，保留原文的文学性和意境。支持多种语言。',
+            icon: '🌐'
+        },
+        {
+            title: 'AI导读',
+            description: '点击AI导读按钮，系统会分析文章内容，提供背景知识、文学价值和重要字词解释。',
+            icon: '📚'
+        },
+        {
+            title: '智能对话',
+            description: '如果您对文章有疑问，可以直接在聊天框提问，AI助手会根据文章内容给您专业解答。',
+            icon: '💬'
+        },
+        {
+            title: '收藏功能',
+            description: '喜欢的文章可以收藏，方便下次快速查看。登录后，您的收藏将跨设备同步。',
+            icon: '⭐'
+        }
+    ];
 
     return (
         <div className="space-y-12">

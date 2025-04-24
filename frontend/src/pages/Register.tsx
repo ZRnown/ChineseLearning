@@ -1,60 +1,55 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { BiUser, BiEnvelope, BiLockAlt } from 'react-icons/bi';
+import { BiUser, BiLock, BiEnvelope } from 'react-icons/bi';
 import { register } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
+import useDarkMode from '../hooks/useDarkMode';
 
-const Register: React.FC = () => {
-    const [formData, setFormData] = useState({
-        username: '',
-        email: '',
-        password: '',
-        confirmPassword: ''
-    });
+const Register = () => {
+    const { darkMode } = useDarkMode();
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }));
-    };
+    const { login } = useAuth();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        if (formData.password !== formData.confirmPassword) {
+        if (password !== confirmPassword) {
             setError('两次输入的密码不一致');
-            setLoading(false);
             return;
         }
 
         try {
-            await register(formData.username, formData.password, formData.email);
-            navigate('/login');
-        } catch (err) {
-            console.error('注册错误:', err);
-            if (err instanceof Error) {
-                setError(err.message);
-            } else {
-                setError('注册失败，请稍后重试');
+            setError('');
+            setLoading(true);
+            const response = await register(username, password, email);
+            if (response) {
+                await login(email, password);
+                navigate('/');
             }
+        } catch (error: any) {
+            setError(error.message || '注册失败，请稍后重试');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-[#f8f5f0] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="w-full max-w-sm space-y-6 bg-white rounded-xl shadow-lg p-8 border border-[#e8e4e0]">
+        <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-[#f8f5f0]'} py-12 px-4 sm:px-6 lg:px-8`}>
+            <div className={`w-full max-w-sm space-y-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-lg p-8 border ${darkMode ? 'border-gray-700' : 'border-[#e8e4e0]'}`}>
                 <div className="text-center">
-                    <h2 className="mt-6 text-3xl font-bold text-[#2c3e50] font-serif">注册</h2>
-                    <p className="mt-2 text-sm text-[#666]">开启古文学习之旅</p>
+                    <h2 className={`mt-6 text-3xl font-bold ${darkMode ? 'text-gray-100' : 'text-[#2c3e50]'} font-serif`}>注册</h2>
+                    <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-[#666]'}`}>开启古文学习之旅</p>
                 </div>
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <span className="block sm:inline">{error}</span>
+                    </div>
+                )}
                 <form className="space-y-4" onSubmit={handleSubmit}>
                     <div className="rounded-md shadow-sm space-y-4">
                         <div>
@@ -68,10 +63,10 @@ const Register: React.FC = () => {
                                     name="username"
                                     type="text"
                                     required
-                                    value={formData.username}
-                                    onChange={handleChange}
-                                    className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-[#e8e4e0] placeholder-[#999] text-[#2c3e50] focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm"
+                                    className={`appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border ${darkMode ? 'border-gray-600 bg-gray-700 placeholder-gray-400 text-white' : 'border-[#e8e4e0] placeholder-[#999] text-[#2c3e50]'} focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm`}
                                     placeholder="用户名"
+                                    value={username}
+                                    onChange={(e) => setUsername(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -86,10 +81,10 @@ const Register: React.FC = () => {
                                     name="email"
                                     type="email"
                                     required
-                                    value={formData.email}
-                                    onChange={handleChange}
-                                    className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-[#e8e4e0] placeholder-[#999] text-[#2c3e50] focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm"
+                                    className={`appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border ${darkMode ? 'border-gray-600 bg-gray-700 placeholder-gray-400 text-white' : 'border-[#e8e4e0] placeholder-[#999] text-[#2c3e50]'} focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm`}
                                     placeholder="邮箱"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -97,17 +92,17 @@ const Register: React.FC = () => {
                             <label htmlFor="password" className="sr-only">密码</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <BiLockAlt className="h-5 w-5 text-[#8b4513]" />
+                                    <BiLock className="h-5 w-5 text-[#8b4513]" />
                                 </div>
                                 <input
                                     id="password"
                                     name="password"
                                     type="password"
                                     required
-                                    value={formData.password}
-                                    onChange={handleChange}
-                                    className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-[#e8e4e0] placeholder-[#999] text-[#2c3e50] focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm"
+                                    className={`appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border ${darkMode ? 'border-gray-600 bg-gray-700 placeholder-gray-400 text-white' : 'border-[#e8e4e0] placeholder-[#999] text-[#2c3e50]'} focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm`}
                                     placeholder="密码"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -115,28 +110,21 @@ const Register: React.FC = () => {
                             <label htmlFor="confirmPassword" className="sr-only">确认密码</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <BiLockAlt className="h-5 w-5 text-[#8b4513]" />
+                                    <BiLock className="h-5 w-5 text-[#8b4513]" />
                                 </div>
                                 <input
                                     id="confirmPassword"
                                     name="confirmPassword"
                                     type="password"
                                     required
-                                    value={formData.confirmPassword}
-                                    onChange={handleChange}
-                                    className="appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border border-[#e8e4e0] placeholder-[#999] text-[#2c3e50] focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm"
+                                    className={`appearance-none rounded-lg relative block w-full px-3 py-3 pl-10 border ${darkMode ? 'border-gray-600 bg-gray-700 placeholder-gray-400 text-white' : 'border-[#e8e4e0] placeholder-[#999] text-[#2c3e50]'} focus:outline-none focus:ring-[#8b4513] focus:border-[#8b4513] focus:z-10 sm:text-sm`}
                                     placeholder="确认密码"
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
                                 />
                             </div>
                         </div>
                     </div>
-
-                    {error && (
-                        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
-                            {error}
-                        </div>
-                    )}
-
                     <div>
                         <button
                             type="submit"
@@ -146,13 +134,9 @@ const Register: React.FC = () => {
                             {loading ? '注册中...' : '注册'}
                         </button>
                     </div>
-
                     <div className="text-center">
-                        <span className="text-sm text-[#666]">已有账号？</span>
-                        <Link
-                            to="/login"
-                            className="ml-2 text-sm text-[#8b4513] hover:text-[#6b3410] hover:underline"
-                        >
+                        <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-[#666]'}`}>已有账号？</span>
+                        <Link className="ml-2 text-sm text-[#8b4513] hover:text-[#6b3410] hover:underline" to="/login">
                             立即登录
                         </Link>
                     </div>
