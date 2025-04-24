@@ -16,7 +16,6 @@ const Translation: React.FC = () => {
     const [aiLoading, setAiLoading] = useState(false);
     const [error, setError] = useState('');
     const [aiError, setAiError] = useState('');
-    const [aiContent, setAiContent] = useState('');
 
     // 语言选项
     const languages = [
@@ -26,7 +25,6 @@ const Translation: React.FC = () => {
         { name: 'Français', code: 'fr' },
         { name: 'Deutsch', code: 'de' },
         { name: 'Русский', code: 'ru' },
-        { name: 'العربية', code: 'ar' },
         { name: '日本語', code: 'ja' },
         { name: '한국어', code: 'ko' },
         { name: 'Português', code: 'pt' },
@@ -344,39 +342,6 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
                     <div className="text-center py-8">
                         <p className="mb-4">点击AI导读按钮开始分析</p>
                         <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI导读将显示在这里...</p>
-                    </div>
-                )}
-            </div>
-
-            {/* AI内容区域 - 修改为支持Markdown */}
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513] dark:text-[#d9c9a3]">AI内容</h2>
-
-                {aiLoading ? (
-                    <div className="flex justify-center items-center py-8">
-                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3]"></div>
-                    </div>
-                ) : aiError ? (
-                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-                        {aiError}
-                    </div>
-                ) : !text.trim() ? (
-                    <div className="text-center py-8">
-                        <p className="mb-4">点击AI内容按钮开始分析</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI内容将显示在这里...</p>
-                    </div>
-                ) : aiContent ? (
-                    <div className="prose max-w-none dark:prose-invert transition-colors duration-200">
-                        <ReactMarkdown
-                            components={{
-                                p: ({ node, ...props }) => <p className="text-gray-700 dark:text-gray-300 transition-colors duration-200" {...props} />
-                            }}
-                        >{aiContent}</ReactMarkdown>
-                    </div>
-                ) : (
-                    <div className="text-center py-8">
-                        <p className="mb-4">点击AI内容按钮开始分析</p>
-                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI内容将显示在这里...</p>
                     </div>
                 )}
             </div>
