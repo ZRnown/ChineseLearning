@@ -127,22 +127,22 @@ interface CollapsibleSectionProps {
 
 const CollapsibleSection: React.FC<CollapsibleSectionProps> = ({ title, summary, children, isOpen, toggleOpen }) => {
     return (
-        <div className="border-b border-[#e8e4e0] py-3">
+        <div className="border-b border-[#e8e4e0] dark:border-gray-700 py-3 transition-colors duration-200">
             <div
                 className="flex justify-between items-center cursor-pointer"
                 onClick={toggleOpen}
             >
                 <div>
-                    <h3 className="text-xl font-bold text-[#2c3e50] mb-1">{title}</h3>
-                    {!isOpen && <p className="text-[#666]">{summary}</p>}
+                    <h3 className="text-xl font-bold text-[#2c3e50] dark:text-gray-200 mb-1 transition-colors duration-200">{title}</h3>
+                    {!isOpen && <p className="text-[#666] dark:text-gray-400 transition-colors duration-200">{summary}</p>}
                 </div>
-                <div className="text-[#8b4513] text-xl">
+                <div className="text-[#8b4513] dark:text-[#d9c9a3] text-xl transition-colors duration-200">
                     {isOpen ? <BiChevronUp /> : <BiChevronDown />}
                 </div>
             </div>
 
             {isOpen && (
-                <div className="mt-3 border-l-4 border-[#8b4513] pl-4 py-2">
+                <div className="mt-3 border-l-4 border-[#8b4513] dark:border-[#d9c9a3] pl-4 py-2 transition-colors duration-200">
                     {children}
                 </div>
             )}
@@ -183,11 +183,11 @@ const Home: React.FC = () => {
         <div className="space-y-12">
             {/* 欢迎区域 */}
             <div className="text-center py-12">
-                <h1 className="text-4xl font-bold text-[#2c3e50] font-serif mb-4">古文导读</h1>
-                <p className="text-xl text-[#666] mb-8">让古典文学焕发新生，让智慧跨越时空</p>
+                <h1 className="text-4xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-4 transition-colors duration-200">古文导读</h1>
+                <p className="text-xl text-[#666] dark:text-gray-300 mb-8 transition-colors duration-200">让古典文学焕发新生，让智慧跨越时空</p>
                 <Link
                     to="/classics"
-                    className="inline-block px-8 py-3 bg-[#8b4513] text-white rounded-lg hover:bg-[#6b3410] transition-colors"
+                    className="inline-block px-8 py-3 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200 shadow-md"
                 >
                     开始导读
                 </Link>
@@ -199,22 +199,22 @@ const Home: React.FC = () => {
                     <Link
                         key={index}
                         to={feature.link}
-                        className="bg-white rounded-lg shadow-lg p-6 border border-[#e8e4e0] hover:shadow-xl transition-shadow"
+                        className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-[#e8e4e0] dark:border-gray-700 hover:shadow-xl transition-all duration-200"
                     >
-                        <div className="text-[#8b4513] mb-4">{feature.icon}</div>
-                        <h3 className="text-xl font-bold text-[#2c3e50] font-serif mb-2">{feature.title}</h3>
-                        <p className="text-[#666]">{feature.description}</p>
+                        <div className="text-[#8b4513] dark:text-[#d9c9a3] mb-4 transition-colors duration-200">{feature.icon}</div>
+                        <h3 className="text-xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-2 transition-colors duration-200">{feature.title}</h3>
+                        <p className="text-[#666] dark:text-gray-300 transition-colors duration-200">{feature.description}</p>
                     </Link>
                 ))}
             </div>
 
             {/* 使用说明 */}
-            <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-[#2c3e50] font-serif">使用说明</h2>
+                    <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif transition-colors duration-200">使用说明</h2>
                     <button
                         onClick={toggleAllSections}
-                        className="text-sm px-3 py-1 bg-[#f5f2e8] text-[#8b4513] rounded border border-[#d9c9a3] hover:bg-[#e8e4e0] flex items-center"
+                        className="text-sm px-3 py-1 bg-[#f5f2e8] dark:bg-gray-700 text-[#8b4513] dark:text-[#d9c9a3] rounded border border-[#d9c9a3] dark:border-gray-600 hover:bg-[#e8e4e0] dark:hover:bg-gray-600 flex items-center transition-colors duration-200"
                     >
                         {allExpanded ? '全部折叠' : '全部展开'}
                         {allExpanded ? <BiChevronUp className="ml-1" /> : <BiChevronDown className="ml-1" />}

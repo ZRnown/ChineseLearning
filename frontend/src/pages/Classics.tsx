@@ -135,15 +135,15 @@ const Classics: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="flex items-center justify-center min-h-screen bg-[#f8f5f0] dark:bg-gray-900 transition-colors duration-200">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3]"></div>
             </div>
         );
     }
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h1 className="text-3xl font-bold text-center mb-8">古籍列表</h1>
+            <h1 className="text-3xl font-bold text-center mb-8 text-[#2c3e50] dark:text-gray-100 transition-colors duration-200">古籍列表</h1>
 
             {/* 搜索区域 */}
             <div className="mb-6">
@@ -154,12 +154,12 @@ const Classics: React.FC = () => {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="请输入搜索关键词..."
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] bg-white"
+                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] dark:focus:ring-[#d9c9a3] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                         />
                         <button
                             type="submit"
                             disabled={loading || !searchQuery.trim()}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-[#8B4513] text-white rounded-md hover:bg-[#6B3410] transition-colors disabled:opacity-50"
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 bg-[#8B4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-md hover:bg-[#6B3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200 disabled:opacity-50"
                         >
                             {loading ? '搜索中...' : '搜索'}
                         </button>
@@ -168,7 +168,7 @@ const Classics: React.FC = () => {
                         <select
                             value={searchType}
                             onChange={(e) => setSearchType(e.target.value as any)}
-                            className="px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] bg-white"
+                            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-[#8B4513] dark:focus:ring-[#d9c9a3] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                         >
                             <option value="all">全部</option>
                             <option value="title">标题</option>
@@ -180,9 +180,9 @@ const Classics: React.FC = () => {
 
                 {isSearchMode && (
                     <div className="text-center">
-                        <button 
+                        <button
                             onClick={resetSearch}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                            className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 transition-colors duration-200"
                         >
                             返回全部古籍
                         </button>
@@ -194,11 +194,11 @@ const Classics: React.FC = () => {
             {!isSearchMode && (
                 <div className="mb-6 flex flex-wrap gap-4 justify-center">
                     <div className="flex items-center">
-                        <label className="mr-2 text-gray-700">朝代：</label>
+                        <label className="mr-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">朝代：</label>
                         <select
                             value={selectedDynasty}
                             onChange={handleDynastyChange}
-                            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
+                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513] dark:focus:ring-[#d9c9a3] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                         >
                             <option value="">全部</option>
                             {dynastyOptions.map((dynasty) => (
@@ -209,11 +209,11 @@ const Classics: React.FC = () => {
                         </select>
                     </div>
                     <div className="flex items-center">
-                        <label className="mr-2 text-gray-700">分类：</label>
+                        <label className="mr-2 text-gray-700 dark:text-gray-300 transition-colors duration-200">分类：</label>
                         <select
                             value={selectedCategory}
                             onChange={handleCategoryChange}
-                            className="px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513]"
+                            className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#8B4513] dark:focus:ring-[#d9c9a3] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-200 transition-colors duration-200"
                         >
                             <option value="">全部</option>
                             {categoryOptions.map((category) => (
@@ -228,33 +228,31 @@ const Classics: React.FC = () => {
 
             {error ? (
                 <div className="text-center py-4">
-                    <p className="text-red-500 mb-2">{error}</p>
+                    <p className="text-red-500 dark:text-red-400 mb-2 transition-colors duration-200">{error}</p>
                     <button
                         onClick={handleRetry}
-                        className="px-4 py-2 bg-[#8B4513] text-white rounded-lg hover:bg-[#6B3410]"
+                        className="px-4 py-2 bg-[#8B4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6B3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
                     >
                         重试
                     </button>
                 </div>
             ) : (
                 <>
-                    <div className="mb-4 text-right text-gray-600">
+                    <div className="mb-4 text-right text-gray-600 dark:text-gray-400 transition-colors duration-200">
                         共 {totalItems} 条记录，当前显示第 {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} 条
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {classics && classics.length > 0 ? (
                             classics.map((classic) => (
-                                <Link 
+                                <Link
                                     key={classic.id}
                                     to={`/classics/${classic.id}`}
-                                    className="block p-6 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+                                    className="block p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-lg transition-shadow"
                                 >
-                                    <h2 className="text-2xl font-serif font-bold mb-2 text-black tracking-wide">{classic.title}</h2>
-                                    <p className="text-gray-600 mb-2">
-                                        {classic.author} · {classic.dynasty}
-                                    </p>
-                                    <p className="text-gray-700 line-clamp-3">{classic.content}</p>
+                                    <h2 className="text-2xl font-serif font-bold mb-2 text-black dark:text-gray-100 tracking-wide transition-colors duration-200">{classic.title}</h2>
+                                    <p className="text-gray-600 dark:text-gray-400 mb-2 transition-colors duration-200">{classic.author} · {classic.dynasty}</p>
+                                    <p className="text-gray-700 dark:text-gray-300 line-clamp-3 transition-colors duration-200">{classic.content}</p>
                                     {classic.tags && classic.tags.length > 0 && (
                                         <div className="mt-4 flex flex-wrap gap-2">
                                             {classic.tags.map((tag) => (
@@ -270,8 +268,10 @@ const Classics: React.FC = () => {
                                 </Link>
                             ))
                         ) : (
-                            <div className="col-span-full text-center text-gray-500 py-8">
-                                {isSearchMode ? '没有找到匹配的古籍' : '寻寻觅觅，冷冷清清，暂未找到相应古籍。'}
+                            <div className="col-span-3 text-center py-8">
+                                <p className="text-gray-500 dark:text-gray-400 transition-colors duration-200">
+                                    {isSearchMode ? '没有找到匹配的结果' : '暂无数据'}
+                                </p>
                             </div>
                         )}
                     </div>

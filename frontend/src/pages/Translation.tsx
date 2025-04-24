@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 // 添加react-markdown导入
 import ReactMarkdown from 'react-markdown';
 import { FaGlobe, FaRobot } from 'react-icons/fa';
+import { AiOutlineRobot } from 'react-icons/ai';
 
 const Translation: React.FC = () => {
     const [text, setText] = useState('');
@@ -15,6 +16,7 @@ const Translation: React.FC = () => {
     const [aiLoading, setAiLoading] = useState(false);
     const [error, setError] = useState('');
     const [aiError, setAiError] = useState('');
+    const [aiContent, setAiContent] = useState('');
 
     // 语言选项
     const languages = [
@@ -207,15 +209,15 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
     };
 
     return (
-        <div className="container mx-auto px-4 py-8 max-w-4xl bg-[#f8f5f0]">
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h1 className="text-4xl font-bold mb-6 font-serif text-[#8b4513] text-center">古文翻译</h1>
-                <p className="text-center text-gray-600 mb-6">让古典文学焕发新生，让智慧跨越时空</p>
+        <div className="container mx-auto px-4 py-8 max-w-4xl bg-[#f8f5f0] dark:bg-gray-900 transition-colors duration-200">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-200">
+                <h1 className="text-4xl font-bold mb-6 font-serif text-[#8b4513] dark:text-[#d9c9a3] text-center transition-colors duration-200">古文翻译</h1>
+                <p className="text-center text-gray-600 dark:text-gray-300 mb-6 transition-colors duration-200">让古典文学焕发新生，让智慧跨越时空</p>
 
                 <div className="mb-4">
                     <textarea
                         id="classic-content"
-                        className="w-full p-4 border border-gray-300 rounded-lg mb-4 min-h-[120px]"
+                        className="w-full p-4 border border-gray-300 dark:border-gray-600 rounded-lg mb-4 min-h-[120px] bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 transition-colors duration-200"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         placeholder="请输入要翻译的古文内容..."
@@ -223,16 +225,16 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
                 </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">选择翻译语言</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8 transition-colors duration-200">
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513] dark:text-[#d9c9a3] transition-colors duration-200">选择翻译语言</h2>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 mb-6">
                     {languages.map((lang) => (
                         <button
                             key={lang.code}
                             className={`p-2 rounded-md text-center transition-colors ${selectedLanguage === lang.name
-                                ? 'bg-[#8b4513] text-white'
-                                : 'bg-gray-100 hover:bg-gray-200'
+                                ? 'bg-[#8b4513] dark:bg-[#d9c9a3] text-white dark:text-gray-900'
+                                : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                                 }`}
                             onClick={() => handleLanguageSelect(lang)}
                         >
@@ -244,9 +246,8 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
                 <div className="flex space-x-4">
                     <button
                         onClick={handleTranslate}
-                        className={`flex items-center justify-center px-6 py-3 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors ${
-                            loading ? 'opacity-70 cursor-not-allowed' : ''
-                        }`}
+                        className={`flex items-center justify-center px-6 py-3 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-md hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors ${loading ? 'opacity-70 cursor-not-allowed' : ''
+                            }`}
                         disabled={loading || aiLoading}
                     >
                         {loading ? (
@@ -267,9 +268,8 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
 
                     <button
                         onClick={handleAIGuide}
-                        className={`flex items-center justify-center px-6 py-3 bg-[#4b5563] text-white rounded-md hover:bg-[#374151] transition-colors ${
-                            aiLoading ? 'opacity-70 cursor-not-allowed' : ''
-                        }`}
+                        className={`flex items-center justify-center px-6 py-3 bg-[#4b5563] text-white rounded-md hover:bg-[#374151] transition-colors ${aiLoading ? 'opacity-70 cursor-not-allowed' : ''
+                            }`}
                         disabled={loading || aiLoading}
                     >
                         {aiLoading ? (
@@ -282,7 +282,7 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
                             </>
                         ) : (
                             <>
-                                <FaRobot className="mr-2" />
+                                <AiOutlineRobot className="mr-2" />
                                 AI导读
                             </>
                         )}
@@ -291,38 +291,37 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
             </div>
 
             {/* 翻译结果区域 */}
-            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">翻译结果</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513] dark:text-[#d9c9a3]">翻译结果</h2>
 
                 {loading ? (
-                    <div className="text-center py-8">
-                        <p className="text-xl mb-4">正在翻译中...</p>
-                        <p className="text-gray-500">静候佳音，让文字跨越语言的界限</p>
+                    <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3]"></div>
                     </div>
                 ) : error ? (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
                         {error}
                     </div>
                 ) : translatedText ? (
-                    <div className="prose max-w-none">
-                        {translatedText}
+                    <div className="prose max-w-none dark:prose-invert transition-colors duration-200">
+                        <h3 className="font-bold text-xl mb-2 text-gray-800 dark:text-gray-200 transition-colors duration-200">{selectedLanguage} 翻译</h3>
+                        <p className="text-gray-700 dark:text-gray-300 whitespace-pre-line transition-colors duration-200">{translatedText}</p>
                     </div>
                 ) : (
                     <div className="text-center py-8">
                         <p className="mb-4">选择语言并点击翻译按钮</p>
-                        <p className="text-gray-500">让文字跨越语言的界限</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">翻译结果将显示在这里...</p>
                     </div>
                 )}
             </div>
 
             {/* AI导读区域 - 修改为支持Markdown */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513]">AI导读</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513] dark:text-[#d9c9a3]">AI导读</h2>
 
                 {aiLoading ? (
-                    <div className="text-center py-8">
-                        <p className="text-xl mb-4">正在生成AI导读...</p>
-                        <p className="text-gray-500">静候佳音，让AI为你解读文字背后的深意</p>
+                    <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3]"></div>
                     </div>
                 ) : aiError ? (
                     <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
@@ -331,16 +330,53 @@ Please use Markdown formatting including headings, lists, quotes, etc. to improv
                 ) : !text.trim() ? (
                     <div className="text-center py-8">
                         <p className="mb-4">点击AI导读按钮开始分析</p>
-                        <p className="text-gray-500">让AI为你解读文字背后的深意</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI导读将显示在这里...</p>
                     </div>
                 ) : aiGuideText ? (
-                    <div className="prose prose-stone max-w-none overflow-auto">
-                        <ReactMarkdown>{aiGuideText}</ReactMarkdown>
+                    <div className="prose max-w-none dark:prose-invert transition-colors duration-200">
+                        <ReactMarkdown
+                            components={{
+                                p: ({ node, ...props }) => <p className="text-gray-700 dark:text-gray-300 transition-colors duration-200" {...props} />
+                            }}
+                        >{aiGuideText}</ReactMarkdown>
                     </div>
                 ) : (
                     <div className="text-center py-8">
                         <p className="mb-4">点击AI导读按钮开始分析</p>
-                        <p className="text-gray-500">让AI为你解读古文背后的深意</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI导读将显示在这里...</p>
+                    </div>
+                )}
+            </div>
+
+            {/* AI内容区域 - 修改为支持Markdown */}
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+                <h2 className="text-2xl font-bold mb-4 font-serif text-[#8b4513] dark:text-[#d9c9a3]">AI内容</h2>
+
+                {aiLoading ? (
+                    <div className="flex justify-center items-center py-8">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3]"></div>
+                    </div>
+                ) : aiError ? (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                        {aiError}
+                    </div>
+                ) : !text.trim() ? (
+                    <div className="text-center py-8">
+                        <p className="mb-4">点击AI内容按钮开始分析</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI内容将显示在这里...</p>
+                    </div>
+                ) : aiContent ? (
+                    <div className="prose max-w-none dark:prose-invert transition-colors duration-200">
+                        <ReactMarkdown
+                            components={{
+                                p: ({ node, ...props }) => <p className="text-gray-700 dark:text-gray-300 transition-colors duration-200" {...props} />
+                            }}
+                        >{aiContent}</ReactMarkdown>
+                    </div>
+                ) : (
+                    <div className="text-center py-8">
+                        <p className="mb-4">点击AI内容按钮开始分析</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-center py-8 transition-colors duration-200">AI内容将显示在这里...</p>
                     </div>
                 )}
             </div>

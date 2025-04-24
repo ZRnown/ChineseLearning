@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getClassicById } from '../services/classics';
 import { Classic } from '../types/classic';
 import LoadingSpinner from '../components/LoadingSpinner';
-import { BiVolumeFull, BiVolumeMute, BiPause, BiPlay } from 'react-icons/bi';
+import { BiVolumeFull, BiVolumeMute, BiPause, BiPlay, BiCog } from 'react-icons/bi';
 import '../styles/ClassicDetail.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -1029,20 +1029,20 @@ ${classic?.content}
   return (
     <div className="space-y-8">
       {/* 古籍基本信息 */}
-      <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
           <div>
             <h1
-              className="text-3xl font-bold text-[#2c3e50] font-serif mb-2 cursor-pointer hover:text-[#8b4513]"
+              className="text-3xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-2 cursor-pointer hover:text-[#8b4513] dark:hover:text-[#d9c9a3] transition-colors duration-200"
               onClick={handleWorkTitleClick}
               title="点击查看作品解析"
             >
               {classic.title}
             </h1>
-            <div className="text-[#666] mb-6">
+            <div className="text-[#666] dark:text-gray-400 mb-6 transition-colors duration-200">
               <span className="mr-4">作者：
                 <span
-                  className="cursor-pointer hover:text-[#8b4513] hover:underline"
+                  className="cursor-pointer hover:text-[#8b4513] dark:hover:text-[#d9c9a3] hover:underline transition-colors duration-200"
                   onClick={handleAuthorClick}
                 >
                   {classic.author}
@@ -1062,84 +1062,50 @@ ${classic?.content}
             <div className="flex space-x-2">
               {/* 拼音按钮 */}
               <button
+                className="flex items-center justify-center p-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200"
                 onClick={() => setShowPinyin(!showPinyin)}
-                className={`flex items-center justify-center p-2 ${showPinyin ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                  } rounded-md hover:bg-gray-300 transition-colors`}
-                title={showPinyin ? "隐藏拼音" : "显示拼音"}
+                title="显示拼音"
               >
                 <span className="text-sm">拼音</span>
               </button>
 
               {/* 释义按钮 */}
               <button
+                className={`flex items-center justify-center p-2 ${isExplanationMode
+                  ? 'bg-[#8b4513] dark:bg-[#d9c9a3] text-white dark:text-gray-800'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  } rounded-md transition-colors duration-200`}
                 onClick={() => setIsExplanationMode(!isExplanationMode)}
-                className={`flex items-center justify-center p-2 ${isExplanationMode ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                  } rounded-md hover:bg-gray-300 transition-colors`}
-                title={isExplanationMode ? "退出释义模式" : "进入释义模式"}
+                title="进入释义模式"
               >
                 <span className="text-sm">释义</span>
               </button>
 
               {/* 朗读按钮 */}
               <button
+                className={`flex items-center justify-center p-2 ${isReadingMode
+                  ? 'bg-[#8b4513] dark:bg-[#d9c9a3] text-white dark:text-gray-800'
+                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                  } rounded-md transition-colors duration-200`}
                 onClick={() => setIsReadingMode(!isReadingMode)}
-                className={`flex items-center justify-center p-2 ${isReadingMode ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                  } rounded-md hover:bg-gray-300 transition-colors`}
-                title={isReadingMode ? "退出朗读模式" : "进入朗读模式"}
+                title="进入朗读模式"
               >
                 <span className="text-sm">朗读</span>
               </button>
-
-              {/* 朗读设置和朗读控制按钮 - 只在朗读模式下显示 */}
-              {isReadingMode && (
-                <>
-                  <button
-                    onClick={() => setShowSpeechSettings(!showSpeechSettings)}
-                    className="flex items-center justify-center p-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-                    title="朗读设置"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </button>
-
-                  <button
-                    onClick={handleSpeak}
-                    className={`flex items-center justify-center p-2 ${isSpeaking ? 'bg-[#8b4513] text-white' : 'bg-gray-200 text-gray-700'
-                      } rounded-md hover:bg-gray-300 transition-colors`}
-                    title={isSpeaking ? "停止朗读" : "朗读原文"}
-                  >
-                    {isSpeaking ? <BiVolumeMute className="w-5 h-5" /> : <BiVolumeFull className="w-5 h-5" />}
-                  </button>
-
-                  {isSpeaking && (
-                    <button
-                      onClick={handlePauseResume}
-                      className={`flex items-center justify-center p-2 ${isPaused ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-500 hover:bg-gray-600'
-                        } text-white rounded-md transition-colors`}
-                      title={isPaused ? "继续朗读" : "暂停朗读"}
-                    >
-                      {isPaused ? <BiPlay className="w-5 h-5" /> : <BiPause className="w-5 h-5" />}
-                    </button>
-                  )}
-                </>
-              )}
             </div>
           </div>
         </div>
 
         {/* 修改原文显示部分，添加拼音标注 */}
-        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] prose-p:text-[#444]">
+        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] dark:prose-headings:text-gray-100 prose-p:text-[#444] dark:prose-p:text-gray-300 transition-colors duration-200">
           {sentences.length > 0 ? (
             <div className="whitespace-pre-wrap">
               {sentences.map((sentence, index) => (
                 <span
                   key={index}
-                  className={`sentence-container ${currentSentenceIndex === index ? 'current-reading' : ''} ${isReadingMode ? 'readable-sentence' : ''
-                    }`}
+                  className={`sentence-container ${currentSentenceIndex === index ? 'reading' : ''}`}
                   onClick={() => handleSentenceClick(index)}
-                  title={isReadingMode ? "点击从此处开始朗读" : ""}
+                  title={currentSentenceIndex === index ? '正在朗读这句' : '点击开始朗读这句'}
                 >
                   {renderClickableText(sentence)}
                 </span>
@@ -1154,17 +1120,17 @@ ${classic?.content}
       </div>
 
       {/* 语言选择和功能按钮 */}
-      <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
         <div className="mb-6">
-          <label className="block text-[#2c3e50] font-medium mb-2">选择翻译语言</label>
+          <label className="block text-[#2c3e50] dark:text-gray-200 font-medium mb-2 transition-colors duration-200">选择翻译语言</label>
           <div className="grid grid-cols-4 sm:grid-cols-5 lg:grid-cols-6 gap-2">
             {languages.map((lang) => (
               <button
                 key={lang.code}
                 onClick={() => setSelectedLanguage(lang.code)}
                 className={`p-2 rounded-lg text-center transition-all duration-300 text-sm ${selectedLanguage === lang.code
-                  ? 'bg-[#8b4513] text-white shadow-md'
-                  : 'bg-[#f8f5f0] text-[#2c3e50] hover:bg-[#e8e4e0] border border-[#e8e4e0]'
+                  ? 'bg-[#8b4513] dark:bg-[#d9c9a3] text-white dark:text-gray-900 shadow-md'
+                  : 'bg-[#f8f5f0] dark:bg-gray-700 text-[#2c3e50] dark:text-gray-300 hover:bg-[#e8e4e0] dark:hover:bg-gray-600 border border-[#e8e4e0] dark:border-gray-600'
                   }`}
               >
                 {lang.name}
@@ -1176,10 +1142,7 @@ ${classic?.content}
           <button
             onClick={handleTranslate}
             disabled={isTranslating}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isTranslating
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-[#8b4513] hover:bg-[#6b3410] text-white'
-              }`}
+            className="flex items-center px-4 py-2 rounded-lg transition-colors bg-[#8b4513] dark:bg-[#d9c9a3]/80 hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] text-white dark:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="mr-2">🌐</span>
             {isTranslating ? '翻译中...' : '翻译'}
@@ -1187,262 +1150,169 @@ ${classic?.content}
           <button
             onClick={handleGenerateAiGuide}
             disabled={isGeneratingGuide}
-            className={`flex items-center px-4 py-2 rounded-lg transition-colors ${isGeneratingGuide
-              ? 'bg-gray-300 cursor-not-allowed'
-              : 'bg-[#8b4513] hover:bg-[#6b3410] text-white'
-              }`}
+            className="flex items-center px-4 py-2 rounded-lg transition-colors bg-[#8b4513] dark:bg-[#d9c9a3]/80 hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] text-white dark:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="mr-2">📚</span>
-            {isGeneratingGuide ? '生成中...' : 'AI导读'}
+            {isGeneratingGuide ? 'AI分析中...' : 'AI导读'}
           </button>
         </div>
       </div>
 
       {/* 翻译结果 */}
-      <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-        <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">翻译结果</h2>
-        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] prose-p:text-[#444]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
+        <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-6 transition-colors duration-200">翻译结果</h2>
+        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] dark:prose-headings:text-gray-100 prose-p:text-[#444] dark:prose-p:text-gray-300 transition-colors duration-200">
           {isTranslating ? (
             <div className="text-center py-12">
-              <div className="text-[#666] text-lg mb-2">正在翻译中...</div>
-              <div className="text-[#999] text-sm">静候佳音，让文字跨越语言的界限</div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3] mx-auto mb-4"></div>
+              <div className="text-[#666] dark:text-gray-400 text-lg mb-2 transition-colors duration-200">正在翻译中...</div>
+              <div className="text-[#999] dark:text-gray-500 text-sm transition-colors duration-200">静候佳音，让文字跨越语言的界限</div>
             </div>
-          ) : !translatedText ? (
-            <div className="text-center py-12">
-              <div className="text-[#666] text-lg mb-2">选择语言并点击翻译按钮</div>
-              <div className="text-[#999] text-sm">让文字跨越语言的界限</div>
+          ) : translatedText ? (
+            <div>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {translatedText}
+              </ReactMarkdown>
             </div>
           ) : (
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{translatedText}</ReactMarkdown>
+            <div className="text-center py-12">
+              <div className="text-[#666] dark:text-gray-400 text-lg mb-2 transition-colors duration-200">选择语言并点击翻译按钮</div>
+              <div className="text-[#999] dark:text-gray-500 text-sm transition-colors duration-200">让文字跨越语言的界限</div>
+            </div>
           )}
         </div>
       </div>
 
-      {/* 朗读设置面板 */}
-      {showSpeechSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-xl font-bold text-[#2c3e50]">朗读设置</h3>
-              <button
-                onClick={() => setShowSpeechSettings(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* 语音选择 */}
-              <div>
-                <label className="block text-[#2c3e50] font-medium mb-2">选择语音</label>
-                <select
-                  value={selectedVoice}
-                  onChange={(e) => setSelectedVoice(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
-                >
-                  {availableVoices.map((voice) => (
-                    <option key={voice.name} value={voice.name}>
-                      {voice.name} ({voice.lang})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* 语速设置 */}
-              <div>
-                <label className="block text-[#2c3e50] font-medium mb-2">
-                  语速: {speechRate}
-                </label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={speechRate}
-                  onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              {/* 音调设置 */}
-              <div>
-                <label className="block text-[#2c3e50] font-medium mb-2">
-                  音调: {speechPitch}
-                </label>
-                <input
-                  type="range"
-                  min="0.1"
-                  max="2"
-                  step="0.1"
-                  value={speechPitch}
-                  onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
-                  className="w-full"
-                />
-              </div>
-
-              {/* 测试按钮 */}
-              <button
-                onClick={() => {
-                  if (!speechSynthesisRef.current) return;
-
-                  // 取消当前所有朗读
-                  speechSynthesisRef.current.cancel();
-
-                  // 创建测试语音
-                  const testUtterance = new SpeechSynthesisUtterance("这是一个测试，看看这个语音听起来怎么样？");
-                  testUtterance.lang = 'zh-CN';
-                  testUtterance.rate = speechRate;
-                  testUtterance.pitch = speechPitch;
-
-                  // 设置选定的语音
-                  const voice = availableVoices.find(v => v.name === selectedVoice);
-                  if (voice) {
-                    testUtterance.voice = voice;
-                  }
-
-                  // 朗读测试文本
-                  speechSynthesisRef.current.speak(testUtterance);
-                }}
-                className="w-full py-2 px-4 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors mt-2"
-              >
-                测试当前设置
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* AI导读 */}
-      <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-        <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">AI导读</h2>
-        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] prose-p:text-[#444]">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
+        <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-6 transition-colors duration-200">AI导读</h2>
+        <div className="prose max-w-none dark:prose-invert prose-headings:font-serif prose-headings:text-[#2c3e50] dark:prose-headings:text-gray-100 prose-p:text-[#444] dark:prose-p:text-gray-300 transition-colors duration-200">
           {isGeneratingGuide ? (
             <div className="text-center py-12">
-              <div className="text-[#666] text-lg mb-2">正在生成AI导读...</div>
-              <div className="text-[#999] text-sm">静候佳音，让AI为你解读文字背后的深意</div>
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b4513] dark:border-[#d9c9a3] mx-auto mb-4"></div>
+              <div className="text-[#666] dark:text-gray-400 text-lg mb-2 transition-colors duration-200">正在生成AI导读...</div>
+              <div className="text-[#999] dark:text-gray-500 text-sm transition-colors duration-200">静候佳音，让AI为你解读文字背后的深意</div>
             </div>
-          ) : !aiGuide ? (
-            <div className="text-center py-12">
-              <div className="text-[#666] text-lg mb-2">点击AI导读按钮开始分析</div>
-              <div className="text-[#999] text-sm">让AI为你解读文字背后的深意</div>
-            </div>
+          ) : aiGuide ? (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {aiGuide}
+            </ReactMarkdown>
           ) : (
-            <>
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>{aiGuide}</ReactMarkdown>
-
-              <div className="mt-8 border-t pt-6 border-[#e8e4e0]">
-                <h3 className="text-xl font-bold text-[#2c3e50] mb-4">继续对话</h3>
-
-                {chatMessages.length > 0 && (
-                  <div className="space-y-4 mb-4 max-h-[400px] overflow-y-auto p-4 border border-[#e8e4e0] rounded-lg">
-                    {chatMessages.map((message, index) => (
-                      <div
-                        key={index}
-                        className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'
-                          }`}
-                      >
-                        <div
-                          className={`max-w-[80%] rounded-lg p-3 ${message.role === 'user'
-                            ? 'bg-[#8b4513] text-white'
-                            : 'bg-[#f8f5f0] text-[#444]'
-                            }`}
-                        >
-                          {message.role === 'assistant' ? (
-                            <div className="prose prose-sm dark:prose-invert prose-headings:font-serif prose-headings:text-inherit prose-p:text-inherit prose-a:text-inherit max-w-none">
-                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
-                            </div>
-                          ) : (
-                            <p className="whitespace-pre-wrap">{message.content}</p>
-                          )}
-                          <span className="text-xs opacity-70 mt-1 block">
-                            {message.timestamp.toLocaleTimeString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="flex space-x-2">
-                  <textarea
-                    value={inputMessage}
-                    onChange={(e) => setInputMessage(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="输入您的问题..."
-                    className="flex-1 p-3 border border-[#e8e4e0] rounded-lg bg-[#f8f5f0] focus:outline-none focus:ring-2 focus:ring-[#8b4513] resize-none"
-                    rows={2}
-                  />
-                  <button
-                    onClick={handleSendMessage}
-                    disabled={isSendingMessage || !inputMessage.trim()}
-                    className="px-4 py-2 bg-[#8b4513] text-white rounded-lg hover:bg-[#6b3410] disabled:opacity-50 disabled:cursor-not-allowed self-end h-12 flex items-center justify-center"
-                  >
-                    {isSendingMessage ? (
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <span>发送</span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </>
+            <div className="text-center py-12">
+              <div className="text-[#666] dark:text-gray-400 text-lg mb-2 transition-colors duration-200">点击AI导读按钮开始分析</div>
+              <div className="text-[#999] dark:text-gray-500 text-sm transition-colors duration-200">让AI为你解读文字背后的深意</div>
+            </div>
           )}
+        </div>
+      </div>
+
+      {/* AI智能对话 */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
+        <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-6 transition-colors duration-200">智能对话</h2>
+        <div className="mb-6 space-y-4 max-h-96 overflow-y-auto">
+          {chatMessages.map((msg, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-lg ${msg.role === 'user'
+                ? 'ml-10 bg-[#f0f0f0] dark:bg-gray-700 text-[#333] dark:text-gray-200'
+                : 'mr-10 bg-[#8b4513]/10 dark:bg-[#d9c9a3]/10 text-[#444] dark:text-gray-300'
+                } transition-colors duration-200`}
+            >
+              <div className="flex justify-between mb-2">
+                <span className="font-medium text-[#2c3e50] dark:text-gray-200 transition-colors duration-200">
+                  {msg.role === 'user' ? '你' : 'AI助手'}
+                </span>
+                <span className="text-xs text-[#666] dark:text-gray-400 transition-colors duration-200">
+                  {msg.timestamp.toLocaleTimeString()}
+                </span>
+              </div>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {msg.content}
+              </ReactMarkdown>
+            </div>
+          ))}
+          {isSendingMessage && (
+            <div className="p-4 mr-10 rounded-lg bg-[#8b4513]/10 dark:bg-[#d9c9a3]/10 transition-colors duration-200">
+              <div className="flex justify-between mb-2">
+                <span className="font-medium text-[#2c3e50] dark:text-gray-200 transition-colors duration-200">AI助手</span>
+                <span className="text-xs text-[#666] dark:text-gray-400 transition-colors duration-200">
+                  {new Date().toLocaleTimeString()}
+                </span>
+              </div>
+              <div className="flex space-x-2">
+                <div className="w-2 h-2 bg-[#8b4513] dark:bg-[#d9c9a3] rounded-full animate-bounce delay-0"></div>
+                <div className="w-2 h-2 bg-[#8b4513] dark:bg-[#d9c9a3] rounded-full animate-bounce delay-150"></div>
+                <div className="w-2 h-2 bg-[#8b4513] dark:bg-[#d9c9a3] rounded-full animate-bounce delay-300"></div>
+              </div>
+            </div>
+          )}
+        </div>
+        <div className="flex space-x-2">
+          <input
+            type="text"
+            placeholder="输入你想了解的内容..."
+            value={inputMessage}
+            onChange={(e) => setInputMessage(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1 px-4 py-2 border border-[#e8e4e0] dark:border-gray-600 rounded-lg bg-[#f8f5f0] dark:bg-gray-700 text-[#444] dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8b4513] dark:focus:ring-[#d9c9a3] focus:border-transparent transition-colors duration-200"
+          />
+          <button
+            onClick={handleSendMessage}
+            disabled={!inputMessage.trim() || isSendingMessage}
+            className="px-4 py-2 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            发送
+          </button>
         </div>
       </div>
 
       {/* 评论区 */}
-      <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
-        <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">评论区</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 border border-[#e8e4e0] dark:border-gray-700 transition-colors duration-200">
+        <h2 className="text-2xl font-bold text-[#2c3e50] dark:text-gray-100 font-serif mb-6 transition-colors duration-200">评论区</h2>
         <form onSubmit={handleAddComment} className="mb-6">
           <textarea
+            placeholder="写下你的评论..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="写下你的评论..."
-            className="w-full h-32 p-4 text-lg border border-[#e8e4e0] rounded-lg bg-[#f8f5f0] focus:outline-none focus:ring-2 focus:ring-[#8b4513] focus:border-transparent resize-none font-serif"
+            className="w-full h-32 p-4 text-lg border border-[#e8e4e0] dark:border-gray-600 rounded-lg bg-[#f8f5f0] dark:bg-gray-700 text-[#444] dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-[#8b4513] dark:focus:ring-[#d9c9a3] focus:border-transparent resize-none font-serif transition-colors duration-200"
           />
           <button
             type="submit"
-            className="mt-4 px-4 py-2 bg-[#8b4513] text-white rounded-lg hover:bg-[#6b3410] transition-colors"
+            className="mt-4 px-4 py-2 bg-[#8b4513] dark:bg-[#d9c9a3]/80 text-white dark:text-gray-900 rounded-lg hover:bg-[#6b3410] dark:hover:bg-[#d9c9a3] transition-colors duration-200"
           >
             发表评论
           </button>
         </form>
-
         <div className="space-y-4">
           {comments.map((comment) => (
-            <div key={comment.id} className="border-b border-[#e8e4e0] pb-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="font-medium text-[#2c3e50]">{comment.username}</span>
-                <span className="text-sm text-[#666]">{new Date(comment.createdAt).toLocaleString()}</span>
+            <div
+              key={comment.id}
+              className="p-4 bg-[#f8f5f0] dark:bg-gray-700 rounded-lg transition-colors duration-200"
+            >
+              <div className="flex justify-between mb-2">
+                <span className="font-medium text-[#2c3e50] dark:text-gray-200 transition-colors duration-200">{comment.username}</span>
+                <span className="text-sm text-[#666] dark:text-gray-400 transition-colors duration-200">
+                  {new Date(comment.createdAt).toLocaleDateString('zh-CN')}
+                </span>
               </div>
-              <p className="text-[#444]">{comment.content}</p>
+              <p className="text-[#444] dark:text-gray-300 transition-colors duration-200">{comment.content}</p>
             </div>
           ))}
         </div>
       </div>
 
-      {showExplanation && selectedCharacter && (
-        <CharacterExplanation
-          character={selectedCharacter}
-          onClose={() => setShowExplanation(false)}
-        />
-      )}
-
-      {/* Author introduction modal */}
-      {showAuthorIntroduction && classic?.author && (
+      {/* 作者简介弹窗 */}
+      {showAuthorIntroduction && (
         <AuthorIntroduction
           isOpen={showAuthorIntroduction}
           onClose={() => setShowAuthorIntroduction(false)}
-          author={classic.author}
+          author={classic.author || '佚名'}
           introduction={selectedLanguage !== 'zh' && translatedAuthorIntroduction ? translatedAuthorIntroduction : authorIntroduction}
           isLoading={isLoadingAuthorIntro}
         />
       )}
 
-      {/* Work explanation modal */}
+      {/* 作品解析弹窗 */}
       {showWorkExplanation && (
         <WorkExplanation
           isOpen={showWorkExplanation}
@@ -1450,6 +1320,15 @@ ${classic?.content}
           title={classic.title}
           explanation={selectedLanguage !== 'zh' && translatedWorkExplanation ? translatedWorkExplanation : workExplanation}
           isLoading={isLoadingWorkExplanation}
+        />
+      )}
+
+      {/* 字词释义 */}
+      {selectedCharacter && (
+        <CharacterExplanation
+          character={selectedCharacter}
+          show={showExplanation}
+          onClose={() => setShowExplanation(false)}
         />
       )}
     </div>
