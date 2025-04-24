@@ -13,6 +13,7 @@ import FavoriteButton from '../components/FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useHistory } from '../contexts/HistoryContext';
 import AuthorIntroduction from '../components/AuthorIntroduction';
+import WorkExplanation from '../components/WorkExplanation';
 
 interface Comment {
   id: string;
@@ -86,6 +87,16 @@ const ClassicDetail: React.FC = () => {
   // Author introduction modal state
   const [showAuthorIntroduction, setShowAuthorIntroduction] = useState(false);
   const [authorIntroduction, setAuthorIntroduction] = useState('');
+  const [translatedAuthorIntroduction, setTranslatedAuthorIntroduction] = useState('');
+  const [authorIntroductionCache, setAuthorIntroductionCache] = useState<{ [key: string]: string }>({});
+  const [isLoadingAuthorIntro, setIsLoadingAuthorIntro] = useState(false);
+
+  // Work explanation modal state
+  const [showWorkExplanation, setShowWorkExplanation] = useState(false);
+  const [workExplanation, setWorkExplanation] = useState('');
+  const [translatedWorkExplanation, setTranslatedWorkExplanation] = useState('');
+  const [workExplanationCache, setWorkExplanationCache] = useState<{ [key: string]: string }>({});
+  const [isLoadingWorkExplanation, setIsLoadingWorkExplanation] = useState(false);
 
   // 添加朗读功能相关状态
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -243,6 +254,10 @@ ${classic?.content}
       const data = await response.json();
       if (data.candidates && data.candidates[0] && data.candidates[0].content) {
         setTranslatedText(data.candidates[0].content.parts[0].text);
+
+        // 确保作者简介和作品解析也被翻译成对应语言
+        translateAuthorIntroduction();
+        translateWorkExplanation();
       } else {
         throw new Error('API响应格式不正确');
       }
@@ -772,50 +787,152 @@ ${classic?.content}
   const handleAuthorClick = async () => {
     if (!classic?.author) return;
 
+    // 无论如何都显示弹窗（不要重置翻译状态）
+    setShowAuthorIntroduction(true);
+
+    // 已经有翻译或原文，直接使用
+    if (authorIntroduction || (selectedLanguage !== 'zh' && translatedAuthorIntroduction)) {
+      setIsLoadingAuthorIntro(false);
+      return;
+    }
+
+    // 如果数据库中有作者介绍，直接使用
+    if (classic.author_introduction) {
+      setAuthorIntroduction(classic.author_introduction);
+
+      // 如果当前语言不是中文，尝试翻译
+      if (selectedLanguage !== 'zh') {
+        translateAuthorIntroduction();
+      }
+
+      setIsLoadingAuthorIntro(false);
+      return;
+    }
+
+    // 显示加载中状态
+    setIsLoadingAuthorIntro(true);
+
     try {
-      // In a real application, you would fetch the author introduction from your API
-      // For now, let's generate it using the Gemini API
-      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `请为${classic.author}生成一个简短的作者介绍，介绍其生平、主要作品和文学成就。
-              要求：
-              1. 内容真实准确
-              2. 语言简练流畅
-              3. 重点突出其文学成就和影响
-              4. 篇幅300字左右`
-            }]
-          }],
-          generationConfig: {
-            temperature: 0.2,
-            maxOutputTokens: 1024,
-          }
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`API请求失败: ${response.statusText}`);
-      }
-
-      const data = await response.json();
-      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
-        setAuthorIntroduction(data.candidates[0].content.parts[0].text);
-        setShowAuthorIntroduction(true);
-      } else {
-        throw new Error('API响应格式不正确');
-      }
-    } catch (err) {
-      console.error('获取作者介绍失败:', err);
-      // If API fails, show a default message
+      // 从数据库中没有作者介绍，显示简单提示
       setAuthorIntroduction('暂无作者详细介绍。');
-      setShowAuthorIntroduction(true);
+    } finally {
+      setIsLoadingAuthorIntro(false);
     }
   };
+
+  // Function to translate author introduction
+  const translateAuthorIntroduction = async () => {
+    if (!authorIntroduction || selectedLanguage === 'zh') {
+      setTranslatedAuthorIntroduction('');
+      return;
+    }
+
+    // Check if translation is already cached
+    const cacheKey = `${classic?.author || ''}_${selectedLanguage}`;
+    if (authorIntroductionCache[cacheKey]) {
+      setTranslatedAuthorIntroduction(authorIntroductionCache[cacheKey]);
+      return;
+    }
+
+    // 如果之前没有翻译过，我们为常见语言提供预设的翻译
+    // 这样避免每次都要调用API，提高响应速度
+    const commonTranslations: { [key: string]: { [key: string]: string } } = {
+      // 使用作者名作为键，然后每种语言的翻译作为内部对象
+      // 这里只是示例，实际应用中可以扩展更多常见作者的翻译
+      "李白": {
+        "en": "Li Bai (701-762), also known as Li Po, was one of the greatest poets of the Tang dynasty, known as the 'Immortal Poet'. His poems often feature themes of nature, friendship, and the joy of wine. Li Bai's writing style is characterized by its imaginative qualities and bold, unconstrained expression.",
+        "es": "Li Bai (701-762), también conocido como Li Po, fue uno de los más grandes poetas de la dinastía Tang, conocido como el 'Poeta Inmortal'. Sus poemas a menudo presentan temas de la naturaleza, la amistad y la alegría del vino. El estilo de escritura de Li Bai se caracteriza por sus cualidades imaginativas y su expresión audaz y sin restricciones."
+      },
+      "杜甫": {
+        "en": "Du Fu (712-770) was a prominent Chinese poet of the Tang dynasty. Often called the 'Poet Historian' or 'Poet Sage', his works are known for their realism, social criticism, and deep compassion. Du Fu's life was marked by personal hardship and the political turmoil of his era, which is reflected in his poetry.",
+        "es": "Du Fu (712-770) fue un destacado poeta chino de la dinastía Tang. A menudo llamado el 'Poeta Historiador' o 'Poeta Sabio', sus obras son conocidas por su realismo, crítica social y profunda compasión. La vida de Du Fu estuvo marcada por dificultades personales y la agitación política de su época, lo que se refleja en su poesía."
+      }
+    };
+
+    // 检查是否有这个作者的预设翻译
+    if (classic?.author && commonTranslations[classic.author] && commonTranslations[classic.author][selectedLanguage]) {
+      const translation = commonTranslations[classic.author][selectedLanguage];
+      setTranslatedAuthorIntroduction(translation);
+
+      // 缓存这个翻译
+      setAuthorIntroductionCache(prev => {
+        const newCache = { ...prev };
+        newCache[cacheKey] = translation;
+        return newCache;
+      });
+
+      return;
+    }
+
+    // 如果没有预设翻译，显示原文
+    setTranslatedAuthorIntroduction('');
+  };
+
+  // Update translated author introduction when language changes
+  useEffect(() => {
+    translateAuthorIntroduction();
+  }, [selectedLanguage, authorIntroduction]);
+
+  // Function to handle work title click
+  const handleWorkTitleClick = async () => {
+    if (!classic) return;
+
+    setShowWorkExplanation(true);
+
+    // 如果数据库中有作品解析，直接使用
+    if (classic.explanation) {
+      setWorkExplanation(classic.explanation);
+
+      // 如果当前语言不是中文，尝试翻译
+      if (selectedLanguage !== 'zh') {
+        translateWorkExplanation();
+      }
+
+      setIsLoadingWorkExplanation(false);
+      return;
+    }
+
+    // 如果缓存中已有作品解析，直接使用
+    if (workExplanation) {
+      setIsLoadingWorkExplanation(false);
+      return;
+    }
+
+    // 显示加载中状态
+    setIsLoadingWorkExplanation(true);
+
+    try {
+      // 从数据库中没有作品解析，显示简单提示
+      setWorkExplanation('暂无作品详细解析。');
+    } finally {
+      setIsLoadingWorkExplanation(false);
+    }
+  };
+
+  // Function to translate work explanation
+  const translateWorkExplanation = async () => {
+    if (!workExplanation || selectedLanguage === 'zh') {
+      setTranslatedWorkExplanation('');
+      return;
+    }
+
+    // Check if translation is already cached
+    const cacheKey = `${classic?.title || ''}_${selectedLanguage}`;
+    if (workExplanationCache[cacheKey]) {
+      setTranslatedWorkExplanation(workExplanationCache[cacheKey]);
+      return;
+    }
+
+    // 如果没有预设翻译，显示原文
+    setTranslatedWorkExplanation('');
+  };
+
+  // Update translated work explanation when language changes
+  useEffect(() => {
+    if (workExplanation) {
+      translateWorkExplanation();
+    }
+  }, [selectedLanguage, workExplanation]);
 
   if (loading) {
     return (
@@ -839,7 +956,13 @@ ${classic?.content}
       <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-[#2c3e50] font-serif mb-2">{classic.title}</h1>
+            <h1
+              className="text-3xl font-bold text-[#2c3e50] font-serif mb-2 cursor-pointer hover:text-[#8b4513]"
+              onClick={handleWorkTitleClick}
+              title="点击查看作品解析"
+            >
+              {classic.title}
+            </h1>
             <div className="text-[#666] mb-6">
               <span className="mr-4">作者：
                 <span
@@ -1238,7 +1361,19 @@ ${classic?.content}
           isOpen={showAuthorIntroduction}
           onClose={() => setShowAuthorIntroduction(false)}
           author={classic.author}
-          introduction={authorIntroduction}
+          introduction={selectedLanguage !== 'zh' && translatedAuthorIntroduction ? translatedAuthorIntroduction : authorIntroduction}
+          isLoading={isLoadingAuthorIntro}
+        />
+      )}
+
+      {/* Work explanation modal */}
+      {showWorkExplanation && (
+        <WorkExplanation
+          isOpen={showWorkExplanation}
+          onClose={() => setShowWorkExplanation(false)}
+          title={classic.title}
+          explanation={selectedLanguage !== 'zh' && translatedWorkExplanation ? translatedWorkExplanation : workExplanation}
+          isLoading={isLoadingWorkExplanation}
         />
       )}
     </div>

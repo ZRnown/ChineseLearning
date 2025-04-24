@@ -20,6 +20,8 @@ export interface Classic {
     dynasty?: string;
     category?: string;
     source?: string;
+    author_introduction?: string;
+    explanation?: string;
     created_at: string;
     updated_at: string;
     translations: Translation[];

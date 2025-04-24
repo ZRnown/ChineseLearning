@@ -6,6 +6,7 @@ interface AuthorIntroductionProps {
     onClose: () => void;
     author: string;
     introduction: string;
+    isLoading?: boolean;
 }
 
 const AuthorIntroduction: React.FC<AuthorIntroductionProps> = ({
@@ -13,16 +14,21 @@ const AuthorIntroduction: React.FC<AuthorIntroductionProps> = ({
     onClose,
     author,
     introduction,
+    isLoading = false,
 }) => {
     if (!isOpen) return null;
 
     return (
-        <div className="author-introduction-modal">
-            <div className="author-introduction-content">
+        <div className="work-explanation-modal author-introduction-modal">
+            <div className="work-explanation-content author-introduction-content">
                 <button className="close-button" onClick={onClose}>×</button>
-                <h2>{author} 简介</h2>
-                <div className="author-introduction-text">
-                    {introduction || '暂无作者介绍'}
+                <h2>《{author}》 作者简介</h2>
+                <div className="work-explanation-text author-introduction-text">
+                    {isLoading ? (
+                        <div className="loading-indicator">加载中...</div>
+                    ) : (
+                        introduction || '暂无作者介绍'
+                    )}
                 </div>
             </div>
         </div>
