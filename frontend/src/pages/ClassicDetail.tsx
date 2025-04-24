@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getClassicById } from '../services/classics';
 import { Classic } from '../types/classic';
@@ -12,6 +12,7 @@ import CharacterExplanation from '../components/CharacterExplanation';
 import FavoriteButton from '../components/FavoriteButton';
 import { useAuth } from '../contexts/AuthContext';
 import { useHistory } from '../contexts/HistoryContext';
+import AuthorIntroduction from '../components/AuthorIntroduction';
 
 interface Comment {
   id: string;
@@ -82,6 +83,10 @@ const ClassicDetail: React.FC = () => {
   const [isFavorite, setIsFavorite] = useState(false);
   const navigate = useNavigate();
 
+  // Author introduction modal state
+  const [showAuthorIntroduction, setShowAuthorIntroduction] = useState(false);
+  const [authorIntroduction, setAuthorIntroduction] = useState('');
+
   // 添加朗读功能相关状态
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -113,6 +118,50 @@ const ClassicDetail: React.FC = () => {
   const [isReadingMode, setIsReadingMode] = useState(false);
   const [isExplanationMode, setIsExplanationMode] = useState(false);
 
+  // 初始化 speechSynthesis 和加载可用的语音
+  useEffect(() => {
+    // 检查浏览器是否支持 speechSynthesis
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      console.log('初始化 speechSynthesis');
+      speechSynthesisRef.current = window.speechSynthesis;
+
+      // 加载可用语音
+      const loadVoices = () => {
+        const voices = window.speechSynthesis.getVoices();
+        console.log('可用语音:', voices);
+        setAvailableVoices(voices);
+
+        // 尝试查找并设置默认使用Xiaoxiao语音
+        const xiaoxiaoVoice = voices.find(v =>
+          v.name.toLowerCase().includes('xiaoxiao') ||
+          v.name.toLowerCase().includes('小小')
+        );
+
+        if (xiaoxiaoVoice) {
+          console.log('找到Xiaoxiao语音:', xiaoxiaoVoice.name);
+          setSelectedVoice(xiaoxiaoVoice.name);
+        }
+      };
+
+      // 语音列表可能需要一段时间才能加载
+      if (window.speechSynthesis.onvoiceschanged !== undefined) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+      }
+
+      // 初始尝试加载
+      loadVoices();
+    } else {
+      console.error('当前浏览器不支持语音合成');
+    }
+
+    return () => {
+      // 组件卸载时取消所有朗读
+      if (speechSynthesisRef.current && isSpeaking) {
+        speechSynthesisRef.current.cancel();
+      }
+    };
+  }, [isSpeaking]); // 依赖于 isSpeaking 以确保清理函数能够访问最新的状态
+
   useEffect(() => {
     const fetchClassic = async () => {
       try {
@@ -120,7 +169,7 @@ const ClassicDetail: React.FC = () => {
         const data = await getClassicById(parseInt(id!));
         console.log('获取到的古籍数据：', data);
         setClassic(data);
-        
+
         // 获取数据后添加到历史记录
         if (data) {
           // 强制类型转换来解决类型问题
@@ -705,8 +754,66 @@ ${classic?.content}
     }
 
     if (classic) {
-      const newFavoriteStatus = await toggleFavorite(classic);
+      // 添加描述字段以匹配toggleFavorite期望的Classic类型
+      const classicWithDescription = {
+        ...classic,
+        description: '', // 添加空描述字段
+        author: classic.author || '', // 确保author不是undefined
+        dynasty: classic.dynasty || '', // 确保dynasty不是undefined
+        category: classic.category || '', // 确保category不是undefined
+        source: classic.source || '' // 确保source不是undefined
+      };
+      const newFavoriteStatus = await toggleFavorite(classicWithDescription);
       setIsFavorite(newFavoriteStatus);
+    }
+  };
+
+  // Function to handle author name click
+  const handleAuthorClick = async () => {
+    if (!classic?.author) return;
+
+    try {
+      // In a real application, you would fetch the author introduction from your API
+      // For now, let's generate it using the Gemini API
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: `请为${classic.author}生成一个简短的作者介绍，介绍其生平、主要作品和文学成就。
+              要求：
+              1. 内容真实准确
+              2. 语言简练流畅
+              3. 重点突出其文学成就和影响
+              4. 篇幅300字左右`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 1024,
+          }
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`API请求失败: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        setAuthorIntroduction(data.candidates[0].content.parts[0].text);
+        setShowAuthorIntroduction(true);
+      } else {
+        throw new Error('API响应格式不正确');
+      }
+    } catch (err) {
+      console.error('获取作者介绍失败:', err);
+      // If API fails, show a default message
+      setAuthorIntroduction('暂无作者详细介绍。');
+      setShowAuthorIntroduction(true);
     }
   };
 
@@ -734,16 +841,23 @@ ${classic?.content}
           <div>
             <h1 className="text-3xl font-bold text-[#2c3e50] font-serif mb-2">{classic.title}</h1>
             <div className="text-[#666] mb-6">
-              <span className="mr-4">作者：{classic.author}</span>
+              <span className="mr-4">作者：
+                <span
+                  className="cursor-pointer hover:text-[#8b4513] hover:underline"
+                  onClick={handleAuthorClick}
+                >
+                  {classic.author}
+                </span>
+              </span>
               <span className="mr-4">朝代：{classic.dynasty}</span>
               <span>分类：{classic.category}</span>
             </div>
           </div>
           <div className="flex items-center mt-4 md:mt-0">
             {/* 添加收藏按钮 */}
-            <FavoriteButton 
-              isFavorite={isFavorite} 
-              onToggle={handleToggleFavorite} 
+            <FavoriteButton
+              isFavorite={isFavorite}
+              onToggle={handleToggleFavorite}
               className="mr-4"
             />
             <div className="flex space-x-2">
@@ -905,6 +1019,103 @@ ${classic?.content}
         </div>
       </div>
 
+      {/* 朗读设置面板 */}
+      {showSpeechSettings && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-[#2c3e50]">朗读设置</h3>
+              <button
+                onClick={() => setShowSpeechSettings(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* 语音选择 */}
+              <div>
+                <label className="block text-[#2c3e50] font-medium mb-2">选择语音</label>
+                <select
+                  value={selectedVoice}
+                  onChange={(e) => setSelectedVoice(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md bg-white"
+                >
+                  {availableVoices.map((voice) => (
+                    <option key={voice.name} value={voice.name}>
+                      {voice.name} ({voice.lang})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* 语速设置 */}
+              <div>
+                <label className="block text-[#2c3e50] font-medium mb-2">
+                  语速: {speechRate}
+                </label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="2"
+                  step="0.1"
+                  value={speechRate}
+                  onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* 音调设置 */}
+              <div>
+                <label className="block text-[#2c3e50] font-medium mb-2">
+                  音调: {speechPitch}
+                </label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="2"
+                  step="0.1"
+                  value={speechPitch}
+                  onChange={(e) => setSpeechPitch(parseFloat(e.target.value))}
+                  className="w-full"
+                />
+              </div>
+
+              {/* 测试按钮 */}
+              <button
+                onClick={() => {
+                  if (!speechSynthesisRef.current) return;
+
+                  // 取消当前所有朗读
+                  speechSynthesisRef.current.cancel();
+
+                  // 创建测试语音
+                  const testUtterance = new SpeechSynthesisUtterance("这是一个测试，看看这个语音听起来怎么样？");
+                  testUtterance.lang = 'zh-CN';
+                  testUtterance.rate = speechRate;
+                  testUtterance.pitch = speechPitch;
+
+                  // 设置选定的语音
+                  const voice = availableVoices.find(v => v.name === selectedVoice);
+                  if (voice) {
+                    testUtterance.voice = voice;
+                  }
+
+                  // 朗读测试文本
+                  speechSynthesisRef.current.speak(testUtterance);
+                }}
+                className="w-full py-2 px-4 bg-[#8b4513] text-white rounded-md hover:bg-[#6b3410] transition-colors mt-2"
+              >
+                测试当前设置
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI导读 */}
       <div className="bg-white rounded-lg shadow-lg p-8 border border-[#e8e4e0]">
         <h2 className="text-2xl font-bold text-[#2c3e50] font-serif mb-6">AI导读</h2>
@@ -1018,6 +1229,16 @@ ${classic?.content}
         <CharacterExplanation
           character={selectedCharacter}
           onClose={() => setShowExplanation(false)}
+        />
+      )}
+
+      {/* Author introduction modal */}
+      {showAuthorIntroduction && classic?.author && (
+        <AuthorIntroduction
+          isOpen={showAuthorIntroduction}
+          onClose={() => setShowAuthorIntroduction(false)}
+          author={classic.author}
+          introduction={authorIntroduction}
         />
       )}
     </div>

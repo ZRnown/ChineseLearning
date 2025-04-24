@@ -35,6 +35,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["Content-Type", "X-Total-Count", "Access-Control-Allow-Origin"],
+    max_age=86400  # 缓存预检请求结果24小时
 )
 
 # 注册路由
