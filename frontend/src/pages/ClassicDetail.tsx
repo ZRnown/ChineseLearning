@@ -212,6 +212,8 @@ const ClassicDetail: React.FC = () => {
     try {
       setIsTranslating(true);
       setTranslatedText('');
+
+      // 使用Gemini API进行翻译
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
         headers: {
@@ -264,6 +266,8 @@ ${classic?.content}
     try {
       setIsGeneratingGuide(true);
       setAiGuide('');
+
+      // 使用Gemini API生成AI导读
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
         headers: {
@@ -326,31 +330,28 @@ ${classic?.content}
       // 使用API聊天接口
       const message = inputMessage; // 保存当前消息，因为inputMessage会被清空
 
-      // 首先尝试使用GeminiAPI直接获取回复
+      // 使用Gemini API
       const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          contents: [{
-            parts: [{
-              text: `你是一个专业的中国古典文学导读助手。现在正在解读《${classic.title}》。
-              请基于以下信息回答用户的问题：
-              原文：${classic.content}
-              
-              用户问题: ${message}
-              
-              请用通俗易懂的语言回答，并保持专业性和准确性。
-              
-              要求：
-              1. 使用Markdown格式进行回复
-              2. 可以使用标题(#)、子标题(##)、列表、引用(>)等Markdown语法
-              3. 重要内容或术语可以用**加粗**或*斜体*标注
-              4. 如果需要引用原文，请使用>引用格式
-              5. 适当使用分段和列表，使内容易于阅读`
-            }]
-          }],
+          contents: [
+            {
+              parts: [
+                {
+                  text: `你是一个专业的中国古典文学导读助手。现在正在解读《${classic.title}》。
+                  请基于以下信息回答用户的问题：
+                  原文：${classic.content}
+                  
+                  用户问题: ${message}
+                  
+                  请用通俗易懂的语言回答，并保持专业性和准确性。`
+                }
+              ]
+            }
+          ],
           generationConfig: {
             temperature: 0.2,
             maxOutputTokens: 2048,
@@ -370,7 +371,7 @@ ${classic?.content}
           responseText = '服务器返回了空响应';
         }
       } else {
-        responseText = `无法获取回答 (${response.status}: ${response.statusText})`;
+        responseText = `抱歉，我暂时无法回答这个问题。请稍后再试。`;
       }
 
       console.log('AI回复:', responseText);
@@ -841,18 +842,31 @@ ${classic?.content}
       return;
     }
 
-    // 如果没有预设翻译，调用翻译API
+    // 如果没有预设翻译，调用Gemini API
     try {
       setIsLoadingAuthorIntro(true);
-      const response = await fetch('/api/translate', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          text: authorIntroduction,
-          sourceLang: 'zh',
-          targetLang: selectedLanguage
+          contents: [{
+            parts: [{
+              text: `请将以下中文文本翻译成${languages.find(lang => lang.code === selectedLanguage)?.name}，保持原文的准确性和风格：
+
+${authorIntroduction}
+
+要求：
+1. 翻译要准确传达原文的意思
+2. 保持专业性和学术性
+3. 使用目标语言的自然表达方式`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 1024,
+          }
         })
       });
 
@@ -861,13 +875,14 @@ ${classic?.content}
       }
 
       const data = await response.json();
-      if (data.translatedText) {
-        setTranslatedAuthorIntroduction(data.translatedText);
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const translatedText = data.candidates[0].content.parts[0].text;
+        setTranslatedAuthorIntroduction(translatedText);
 
         // 缓存翻译结果
         setAuthorIntroductionCache(prev => {
           const newCache = { ...prev };
-          newCache[cacheKey] = data.translatedText;
+          newCache[cacheKey] = translatedText;
           return newCache;
         });
       } else {
@@ -938,18 +953,31 @@ ${classic?.content}
       return;
     }
 
-    // 调用翻译API翻译作品简介
+    // 调用Gemini API翻译作品简介
     try {
       setIsLoadingWorkExplanation(true);
-      const response = await fetch('/api/translate', {
+      const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=AIzaSyDkCLl2WmZZtWKumwMOSq_79XK42qOiCUM', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          text: workExplanation,
-          sourceLang: 'zh',
-          targetLang: selectedLanguage
+          contents: [{
+            parts: [{
+              text: `请将以下中文文本翻译成${languages.find(lang => lang.code === selectedLanguage)?.name}，保持原文的准确性和风格：
+
+${workExplanation}
+
+要求：
+1. 翻译要准确传达原文的意思
+2. 保持专业性和学术性
+3. 使用目标语言的自然表达方式`
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.2,
+            maxOutputTokens: 1024,
+          }
         })
       });
 
@@ -958,13 +986,14 @@ ${classic?.content}
       }
 
       const data = await response.json();
-      if (data.translatedText) {
-        setTranslatedWorkExplanation(data.translatedText);
+      if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+        const translatedText = data.candidates[0].content.parts[0].text;
+        setTranslatedWorkExplanation(translatedText);
 
         // 缓存翻译结果
         setWorkExplanationCache(prev => {
           const newCache = { ...prev };
-          newCache[cacheKey] = data.translatedText;
+          newCache[cacheKey] = translatedText;
           return newCache;
         });
       } else {
